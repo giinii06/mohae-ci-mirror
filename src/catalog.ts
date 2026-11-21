@@ -18,10 +18,10 @@ export const bannerMap=new Map(banners.map(x=>[x.id,x]));
 export const questTopics=['praise','good_day','thanks','self_comfort','rest'] as const;
 export const miniGames=['deduction','memory','treasure','quiz','dice'] as const;
 export const cosmetics:Cosmetic[]=[
-  ...([10,15,25,40,60,80,120].map((p,i)=>({id:'shop_'+['expression','sticker','badge','frame','pose','background','theme'][i],name:'[Ã«ÂÂÃ«Â¯Â¸] ÃªÂ¾Â¸Ã«Â¯Â¸ÃªÂ¸Â° '+(i+1),kind:['expression','sticker','badge','frame','pose','background','theme'][i],price:p,currency:'SHARD' as const}))),
-  ...Array.from({length:20},(_,i)=>({id:'season_reward_'+(i+1),name:'[Ã«ÂÂÃ«Â¯Â¸] Ã¬ÂÂÃ¬Â¦Â Ã«Â³Â´Ã¬ÂÂ '+(i+1),kind:'season',price:0,currency:'SHARD' as const}))
+  ...([10,15,25,40,60,80,120].map((p,i)=>({id:'shop_'+['expression','sticker','badge','frame','pose','background','theme'][i],name:'[ÃÂ«ÃÂÃÂÃÂ«ÃÂ¯ÃÂ¸] ÃÂªÃÂ¾ÃÂ¸ÃÂ«ÃÂ¯ÃÂ¸ÃÂªÃÂ¸ÃÂ° '+(i+1),kind:['expression','sticker','badge','frame','pose','background','theme'][i],price:p,currency:'SHARD' as const}))),
+  ...Array.from({length:20},(_,i)=>({id:'season_reward_'+(i+1),name:'[ÃÂ«ÃÂÃÂÃÂ«ÃÂ¯ÃÂ¸] ÃÂ¬ÃÂÃÂÃÂ¬ÃÂ¦ÃÂ ÃÂ«ÃÂ³ÃÂ´ÃÂ¬ÃÂÃÂ '+(i+1),kind:'season',price:0,currency:'SHARD' as const}))
 ];
-cosmetics.push({id:'dummy_coop_badge',name:'[더미] 협동 완료 배지',kind:'badge',price:0,currency:'SHARD'});
+cosmetics.push({id:'dummy_coop_badge',name:'[ëë¯¸] íë ìë£ ë°°ì§',kind:'badge',price:0,currency:'SHARD'});
 export const cosmeticMap=new Map(cosmetics.map(x=>[x.id,x]));
 export type Grant={currency?:'MOHAE'|'SHARD'|'TICKET';amount?:number;cosmetic?:string;character?:string};
 export const seasonRewards:Grant[]=Array.from({length:20},(_,i)=>{
@@ -38,11 +38,14 @@ export const seasonalEvents=[
 ] as const;
 export const roleColorPresets=['#64748B','#EF4444','#F97316','#EAB308','#84CC16','#22C55E','#06B6D4','#3B82F6','#6366F1','#A855F7','#EC4899','#F43F5E'];
 export function assertCatalog():void {
- if(characters.length!==27||new Set(characters.map(x=>x.id)).size!==27||characters.some(x=>!/\\Aperson\\d+\\z/.test(x.id.replace(/^/,'').replace(/$/,'')))) {
-   // canonical validation below is JavaScript-compatible
- }
- if(characters.some((x,i)=>x.id!=='person'+(i+1)))throw new Error('INVALID_CATALOG');
- for(const b of banners)for(const id of [...b.one,...b.two,...b.three,b.joker,...(b.pickup?[b.pickup]:[])])if(!characterMap.has(id))throw new Error('BROKEN_BANNER');
+ if(characters.length!==27||new Set(characters.map(x=>x.id)).size!==27)throw Error('INVALID_CATALOG');
+ if(characters.some((x,i)=>x.id!=='person'+(i+1)))throw Error('INVALID_CHARACTER_IDS');
+ if(characters.filter(c=>c.kind==='standard'&&c.rarity===1).length!==12)throw Error('INVALID_STANDARD_ONES');
+ if(characters.filter(c=>c.kind==='standard'&&c.rarity===2).length!==8)throw Error('INVALID_STANDARD_TWOS');
+ if(characters.filter(c=>c.kind==='standard'&&c.rarity===3).length!==5)throw Error('INVALID_STANDARD_THREES');
+ for(const b of banners)for(const id of [...b.one,...b.two,...b.three,b.joker,...(b.pickup?[b.pickup]:[])])if(!characterMap.has(id))throw Error('BROKEN_BANNER');
  if(seasonRewards.length!==20)throw Error('INVALID_SEASON');
+ if(seasonRewards.reduce((acc,x)=>acc+(x.currency==='TICKET'?x.amount??0:0),0)!==10)throw Error('INVALID_TICKET_REWARDS');
+ if(seasonRewards.reduce((acc,x)=>acc+(x.currency==='SHARD'?x.amount??0:0),0)!==100)throw Error('INVALID_SHARD_REWARDS');
 }
 assertCatalog();
