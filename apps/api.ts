@@ -14,7 +14,7 @@ const keys:Record<Role,Buffer>={
 };
 const permit:Record<Role,string[]>={
  mohae:['profile','public-profile','visibility','export','journal','journal-delete','attendance','daily','weekly','weekly-claim','draw','draw-history','cards','collection','lock','dismantle','representative','affinity','mini-start','mini-finish','buy','equip','season','season-claim','season-activate','event','event-enable','event-claim','coop','coop-enable','coop-contribute','coop-claim','privacy-delete'],
- collector:['chat','voice'],polly:['report']
+ collector:['chat','voice'],polly:['report','report-status','report-list','report-update']
 };
 function reply(result:unknown,status=200):Response{return Response.json(result,{status,headers:{'Cache-Control':'no-store'}});}
 function requestIdentity(req:Request):Role {
@@ -76,6 +76,9 @@ async function dispatch(req:Request):Promise<Response>{
    case 'chat':result=game.chat(g,u,k,a.messageId);break;
    case 'voice':result=game.voice(g,u,k,a.seconds);break;
    case 'report':result=game.report(g,u,k,a.target||null,a.reason,a.details);break;
+   case 'report-status':result=game.reportStatus(g,u,a.reportId);break;
+   case 'report-list':result=game.moderationList(g);break;
+   case 'report-update':result=game.moderationUpdate(g,u,k,a.reportId,a.status);break;
    case 'privacy-delete':result=game.privacyDelete(g,u,k);break;
    default:throw new GameError('FORBIDDEN');
   }
