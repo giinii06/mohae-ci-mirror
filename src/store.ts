@@ -20,6 +20,7 @@ export class Store {
  "CREATE TABLE IF NOT EXISTS ledger(id TEXT PRIMARY KEY,player_id TEXT NOT NULL REFERENCES players(id),currency TEXT NOT NULL,delta INTEGER NOT NULL,source TEXT NOT NULL,at INTEGER NOT NULL,UNIQUE(player_id,currency,source))",
  "CREATE TABLE IF NOT EXISTS operations(player_id TEXT NOT NULL REFERENCES players(id),request_id TEXT NOT NULL,kind TEXT NOT NULL,result TEXT NOT NULL,at INTEGER NOT NULL,PRIMARY KEY(player_id,request_id))",
  "CREATE TABLE IF NOT EXISTS attendance(player_id TEXT NOT NULL REFERENCES players(id),day TEXT NOT NULL,PRIMARY KEY(player_id,day))",
+ "CREATE TABLE IF NOT EXISTS journals(player_id TEXT NOT NULL REFERENCES players(id),day TEXT NOT NULL,ciphertext TEXT NOT NULL,iv TEXT NOT NULL,tag TEXT NOT NULL,PRIMARY KEY(player_id,day))",
  "CREATE TABLE IF NOT EXISTS daily_quests(player_id TEXT NOT NULL REFERENCES players(id),day TEXT NOT NULL,topic TEXT NOT NULL,PRIMARY KEY(player_id,day))",
  "CREATE TABLE IF NOT EXISTS weekly_claims(player_id TEXT NOT NULL REFERENCES players(id),week TEXT NOT NULL,PRIMARY KEY(player_id,week))",
  "CREATE TABLE IF NOT EXISTS chats(message_id TEXT PRIMARY KEY,player_id TEXT NOT NULL REFERENCES players(id),day TEXT NOT NULL,week TEXT NOT NULL,at INTEGER NOT NULL,accepted INTEGER NOT NULL)",

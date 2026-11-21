@@ -1,4 +1,5 @@
-import {randomUUID} from 'node:crypto';
+import {randomUUID,randomBytes,createCipheriv,createDecipheriv} from 'node:crypto';
+import {secret} from './secrets.ts';
 import {Store} from './store.ts';
 import {gameDay,gameWeek,currentLevel,seasonTier,kstMondayFiveMs} from './time.ts';
 import {drawOne,type Pity} from './gacha.ts';
@@ -77,13 +78,52 @@ export class Game {
   this.credit(p.id,'MOHAE',40,'attendance:'+day,now);this.addXp(p,20,0,now);
   return {claimed:true,day,mohae:40,xp:20};
  });}
- daily(guild:string,user:string,key:string,topic:string):unknown {return this.op(guild,user,key,'daily',(p,now)=>{
+ daily(guild:string,user:string,key:string,topic:string,note?:string,save=false):unknown {return this.op(guild,user,key,'daily',(p,now)=>{
   bad((questTopics as readonly string[]).includes(topic),'INVALID_QUEST');
   const day=gameDay(now);
-  if(this.store.get('SELECT 1 FROM daily_quests WHERE player_id=? AND day=?',p.id,day))return {claimed:false,day};
+  if(this.store.get('SELECT 1 FROM daily_quests WHERE player_id=? AND day=?',p.id,day)){if(save&&note)this.saveJournal(p,day,note);return {claimed:false,day,journalSaved:!!(save&&note)};}
   this.store.run('INSERT INTO daily_quests(player_id,day,topic) VALUES(?,?,?)',p.id,day,topic);
+  if(save&&note)this.saveJournal(p,day,note);
   this.credit(p.id,'MOHAE',60,'daily:'+day,now);this.addXp(p,40,80,now);
-  return {claimed:true,topic,day,mohae:60,xp:40,seasonXp:80};
+  return {claimed:true,topic,day,mohae:60,xp:40,seasonXp:80,journalSaved:!!(save&&note)};
+ });}
+ private journalKey():Buffer {
+  const key=secret('JOURNAL_KEY');
+  bad(/^[a-fA-F0-9]{64}$/.test(key),'INVALID_JOURNAL_KEY');
+  return Buffer.from(key,'hex');
+ }
+ private saveJournal(p:Person,day:string,note:string):void {
+  bad(typeof note==='string'&&note.length>=1&&note.length<=1000,'INVALID_JOURNAL');
+  const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',this.journalKey(),iv);
+  const ciphertext=Buffer.concat([cipher.update(note,'utf8'),cipher.final()]).toString('hex');
+  const tag=cipher.getAuthTag().toString('hex');
+  this.store.run('INSERT INTO journals(player_id,day,ciphertext,iv,tag) VALUES(?,?,?,?,?) ON CONFLICT(player_id,day) DO UPDATE SET ciphertext=excluded.ciphertext,iv=excluded.iv,tag=excluded.tag',p.id,day,ciphertext,iv.toString('hex'),tag);
+ }
+ private journalFor(p:Person,day:string):string|null {
+  const row=this.store.get<{ciphertext:string;iv:string;tag:string}>('SELECT ciphertext,iv,tag FROM journals WHERE player_id=? AND day=?',p.id,day);
+  if(!row)return null;
+  const decipher=createDecipheriv('aes-256-gcm',this.journalKey(),Buffer.from(row.iv,'hex'));
+  decipher.setAuthTag(Buffer.from(row.tag,'hex'));
+  return Buffer.concat([decipher.update(Buffer.from(row.ciphertext,'hex')),decipher.final()]).toString('utf8');
+ }
+ journal(guild:string,user:string,day?:string):unknown{return this.store.tx(()=>{
+  const p=this.player(guild,user);const d=day||gameDay(this.now());
+  bad(/^\d{4}-\d{2}-\d{2}$/.test(d),'INVALID_DAY');
+  return {day:d,note:this.journalFor(p,d)};
+ });}
+ journalDelete(guild:string,user:string,key:string,day?:string):unknown{return this.op(guild,user,key,'journal-delete',(p)=>{
+  const d=day||gameDay(this.now());bad(/^\d{4}-\d{2}-\d{2}$/.test(d),'INVALID_DAY');
+  this.store.run('DELETE FROM journals WHERE player_id=? AND day=?',p.id,d);
+  return {deleted:true,day:d};
+ });}
+ exportData(guild:string,user:string):unknown{return this.store.tx(()=>{
+  const p=this.player(guild,user);
+  const rows=this.store.all<{day:string}>('SELECT day FROM journals WHERE player_id=? ORDER BY day',p.id);
+  return {format:'MOHAE-EXPORT-v1',profile:this.profile(guild,user),cards:this.cards(guild,user),discoveries:this.collection(guild,user),
+   ledger:this.store.all('SELECT currency,delta,source,at FROM ledger WHERE player_id=? ORDER BY at DESC LIMIT 10000',p.id),
+   attendance:this.store.all('SELECT day FROM attendance WHERE player_id=?',p.id),
+   dailyQuests:this.store.all('SELECT day,topic FROM daily_quests WHERE player_id=?',p.id),
+   journals:rows.map(row=>({day:row.day,note:this.journalFor(p,row.day)}))};
  });}
  private weeklyStatus(p:Person,week:string):{completed:string[];stats:Record<string,number>} {
   const start=Date.parse(week+'T00:00:00Z');const end=new Date(start+7*86400_000).toISOString().slice(0,10);
@@ -189,11 +229,11 @@ export class Game {
  });}
  private challenge(game:string):{question:string;answer:string;choices:string[]} {
   switch(game){
-   case 'deduction':return {question:'ÃÂ«ÃÂÃÂ¨ÃÂ¬ÃÂÃÂ: 2, 4, ÃÂ«ÃÂÃÂ¤ÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂÃÂ«ÃÂÃÂ?',answer:'6',choices:['5','6','7']};
-   case 'memory':return {question:'ÃÂ¬ÃÂ¹ÃÂ´ÃÂ«ÃÂÃÂ 4ÃÂ¬ÃÂÃÂÃÂ¬ÃÂÃÂ ÃÂªÃÂ¸ÃÂÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂÃÂ¬ÃÂÃÂ A B C D ÃÂ«ÃÂ¥ÃÂ¼ ÃÂªÃÂ¸ÃÂ°ÃÂ¬ÃÂÃÂµÃÂ­ÃÂÃÂÃÂªÃÂ³ÃÂ  ÃÂ¬ÃÂÃÂÃÂ«ÃÂ ÃÂ¥ÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
-   case 'treasure':return {question:'ÃÂ«ÃÂ³ÃÂ´ÃÂ«ÃÂ¬ÃÂ¼ÃÂ¬ÃÂÃÂ´ ÃÂ¬ÃÂÃÂ¨ÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂ¥ÃÂ¬ÃÂÃÂÃÂ«ÃÂ¥ÃÂ¼ ÃÂªÃÂ³ÃÂ¨ÃÂ«ÃÂÃÂ¼ ÃÂ¬ÃÂ£ÃÂ¼ÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'B',choices:['A','B','C']};
+   case 'deduction':return {question:'ÃÂÃÂ«ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ: 2, 4, ÃÂÃÂ«ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂ¬ÃÂÃÂÃÂÃÂÃÂÃÂ«ÃÂÃÂÃÂÃÂ?',answer:'6',choices:['5','6','7']};
+   case 'memory':return {question:'ÃÂÃÂ¬ÃÂÃÂ¹ÃÂÃÂ´ÃÂÃÂ«ÃÂÃÂÃÂÃÂ 4ÃÂÃÂ¬ÃÂÃÂÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂªÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂ¬ÃÂÃÂÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ A B C D ÃÂÃÂ«ÃÂÃÂ¥ÃÂÃÂ¼ ÃÂÃÂªÃÂÃÂ¸ÃÂÃÂ°ÃÂÃÂ¬ÃÂÃÂÃÂÃÂµÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂªÃÂÃÂ³ÃÂÃÂ  ÃÂÃÂ¬ÃÂÃÂÃÂÃÂÃÂÃÂ«ÃÂÃÂ ÃÂÃÂ¥ÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
+   case 'treasure':return {question:'ÃÂÃÂ«ÃÂÃÂ³ÃÂÃÂ´ÃÂÃÂ«ÃÂÃÂ¬ÃÂÃÂ¼ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ´ ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ¬ÃÂÃÂÃÂÃÂÃÂÃÂ«ÃÂÃÂ¥ÃÂÃÂ¼ ÃÂÃÂªÃÂÃÂ³ÃÂÃÂ¨ÃÂÃÂ«ÃÂÃÂÃÂÃÂ¼ ÃÂÃÂ¬ÃÂÃÂ£ÃÂÃÂ¼ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ.',answer:'B',choices:['A','B','C']};
    case 'quiz':return {question:'2 + 3 = ?',answer:'5',choices:['4','5','6']};
-   case 'dice':return {question:'ÃÂ¬ÃÂ£ÃÂ¼ÃÂ¬ÃÂÃÂ¬ÃÂ¬ÃÂÃÂ ÃÂªÃÂ²ÃÂ°ÃÂªÃÂ³ÃÂ¼ÃÂ«ÃÂ¥ÃÂ¼ ÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ­ÃÂÃÂÃÂ«ÃÂ ÃÂ¤ÃÂ«ÃÂ©ÃÂ´ ÃÂªÃÂµÃÂ´ÃÂ«ÃÂ¦ÃÂ¬ÃÂªÃÂ¸ÃÂ°ÃÂ«ÃÂ¥ÃÂ¼ ÃÂ¬ÃÂÃÂ ÃÂ­ÃÂÃÂÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'roll',choices:['roll']};
+   case 'dice':return {question:'ÃÂÃÂ¬ÃÂÃÂ£ÃÂÃÂ¼ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¬ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂªÃÂÃÂ²ÃÂÃÂ°ÃÂÃÂªÃÂÃÂ³ÃÂÃÂ¼ÃÂÃÂ«ÃÂÃÂ¥ÃÂÃÂ¼ ÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂ«ÃÂÃÂ ÃÂÃÂ¤ÃÂÃÂ«ÃÂÃÂ©ÃÂÃÂ´ ÃÂÃÂªÃÂÃÂµÃÂÃÂ´ÃÂÃÂ«ÃÂÃÂ¦ÃÂÃÂ¬ÃÂÃÂªÃÂÃÂ¸ÃÂÃÂ°ÃÂÃÂ«ÃÂÃÂ¥ÃÂÃÂ¼ ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ ÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂ­ÃÂÃÂÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ¬ÃÂÃÂÃÂÃÂ.',answer:'roll',choices:['roll']};
    default:throw new GameError('INVALID_MINIGAME');
   }
  }
@@ -290,6 +330,7 @@ export class Game {
   return {reportId:id,status:'open'};
  });}
  privacyDelete(guild:string,user:string,key:string):unknown{return this.op(guild,user,key,'privacy-delete',(p,now)=>{
+  this.store.run('DELETE FROM journals WHERE player_id=?',p.id);
   this.store.run('UPDATE players SET user_id=?,deleted=1,representative=NULL WHERE id=?','deleted:'+randomUUID(),p.id);
   this.store.run('UPDATE reports SET reporter=? WHERE reporter=? AND guild=?','deleted',user,guild);
   this.store.run('UPDATE reports SET target=NULL WHERE target=? AND guild=?',user,guild);

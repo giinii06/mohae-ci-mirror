@@ -10,7 +10,7 @@ services:
     environment:
       ALLOWED_GUILD_IDS: ${ALLOWED_GUILD_IDS:?}
       DATABASE_PATH: /data/mohae.sqlite
-    secrets: [mohae_api_key, collector_api_key, polly_api_key]
+    secrets: [mohae_api_key, collector_api_key, polly_api_key, journal_key]
     volumes: [game-data:/data]
     networks: [backend]
     healthcheck:
@@ -61,3 +61,4 @@ secrets:
   mohae_api_key: {file: ./secrets/mohae_api_key}
   collector_api_key: {file: ./secrets/collector_api_key}
   polly_api_key: {file: ./secrets/polly_api_key}
+  journal_key: {file: ./secrets/journal_key}

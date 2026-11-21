@@ -17,4 +17,5 @@ for name in mohae collector polly; do
   file="secrets/${name}_api_key"
   if [[ ! -s "$file" ]]; then openssl rand -hex 32 >"$file";chmod 600 "$file";fi
 done
+if [[ ! -s secrets/journal_key ]]; then openssl rand -hex 32 > secrets/journal_key; chmod 600 secrets/journal_key; fi
 echo "Secrets saved without printing values."
