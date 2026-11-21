@@ -189,11 +189,11 @@ export class Game {
  });}
  private challenge(game:string):{question:string;answer:string;choices:string[]} {
   switch(game){
-   case 'deduction':return {question:'Ã«ÂÂ¨Ã¬ÂÂ: 2, 4, Ã«ÂÂ¤Ã¬ÂÂ Ã¬ÂÂÃ«ÂÂ?',answer:'6',choices:['5','6','7']};
-   case 'memory':return {question:'Ã¬Â¹Â´Ã«ÂÂ 4Ã¬ÂÂÃ¬ÂÂ ÃªÂ¸ÂÃ¬ÂÂ Ã¬ÂÂÃ¬ÂÂ A B C D Ã«Â¥Â¼ ÃªÂ¸Â°Ã¬ÂÂµÃ­ÂÂÃªÂ³Â  Ã¬ÂÂÃ«Â Â¥Ã­ÂÂÃ¬ÂÂ¸Ã¬ÂÂ.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
-   case 'treasure':return {question:'Ã«Â³Â´Ã«Â¬Â¼Ã¬ÂÂ´ Ã¬ÂÂ¨Ã¬ÂÂ Ã¬ÂÂ¥Ã¬ÂÂÃ«Â¥Â¼ ÃªÂ³Â¨Ã«ÂÂ¼ Ã¬Â£Â¼Ã¬ÂÂ¸Ã¬ÂÂ.',answer:'B',choices:['A','B','C']};
+   case 'deduction':return {question:'ÃÂ«ÃÂÃÂ¨ÃÂ¬ÃÂÃÂ: 2, 4, ÃÂ«ÃÂÃÂ¤ÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂÃÂ«ÃÂÃÂ?',answer:'6',choices:['5','6','7']};
+   case 'memory':return {question:'ÃÂ¬ÃÂ¹ÃÂ´ÃÂ«ÃÂÃÂ 4ÃÂ¬ÃÂÃÂÃÂ¬ÃÂÃÂ ÃÂªÃÂ¸ÃÂÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂÃÂ¬ÃÂÃÂ A B C D ÃÂ«ÃÂ¥ÃÂ¼ ÃÂªÃÂ¸ÃÂ°ÃÂ¬ÃÂÃÂµÃÂ­ÃÂÃÂÃÂªÃÂ³ÃÂ  ÃÂ¬ÃÂÃÂÃÂ«ÃÂ ÃÂ¥ÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
+   case 'treasure':return {question:'ÃÂ«ÃÂ³ÃÂ´ÃÂ«ÃÂ¬ÃÂ¼ÃÂ¬ÃÂÃÂ´ ÃÂ¬ÃÂÃÂ¨ÃÂ¬ÃÂÃÂ ÃÂ¬ÃÂÃÂ¥ÃÂ¬ÃÂÃÂÃÂ«ÃÂ¥ÃÂ¼ ÃÂªÃÂ³ÃÂ¨ÃÂ«ÃÂÃÂ¼ ÃÂ¬ÃÂ£ÃÂ¼ÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'B',choices:['A','B','C']};
    case 'quiz':return {question:'2 + 3 = ?',answer:'5',choices:['4','5','6']};
-   case 'dice':return {question:'Ã¬Â£Â¼Ã¬ÂÂ¬Ã¬ÂÂ ÃªÂ²Â°ÃªÂ³Â¼Ã«Â¥Â¼ Ã­ÂÂÃ¬ÂÂ¸Ã­ÂÂÃ«Â Â¤Ã«Â©Â´ ÃªÂµÂ´Ã«Â¦Â¬ÃªÂ¸Â°Ã«Â¥Â¼ Ã¬ÂÂ Ã­ÂÂÃ­ÂÂÃ¬ÂÂ¸Ã¬ÂÂ.',answer:'roll',choices:['roll']};
+   case 'dice':return {question:'ÃÂ¬ÃÂ£ÃÂ¼ÃÂ¬ÃÂÃÂ¬ÃÂ¬ÃÂÃÂ ÃÂªÃÂ²ÃÂ°ÃÂªÃÂ³ÃÂ¼ÃÂ«ÃÂ¥ÃÂ¼ ÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ­ÃÂÃÂÃÂ«ÃÂ ÃÂ¤ÃÂ«ÃÂ©ÃÂ´ ÃÂªÃÂµÃÂ´ÃÂ«ÃÂ¦ÃÂ¬ÃÂªÃÂ¸ÃÂ°ÃÂ«ÃÂ¥ÃÂ¼ ÃÂ¬ÃÂÃÂ ÃÂ­ÃÂÃÂÃÂ­ÃÂÃÂÃÂ¬ÃÂÃÂ¸ÃÂ¬ÃÂÃÂ.',answer:'roll',choices:['roll']};
    default:throw new GameError('INVALID_MINIGAME');
   }
  }
@@ -239,8 +239,9 @@ export class Game {
   return this.store.tx(()=>{
    const current=this.store.get('SELECT 1 FROM season WHERE guild_id=? AND NOT (end_at<=? OR start_at>=?)',guild,start,start+56*86400_000);
    bad(!current,'SEASON_OVERLAP');
-   this.store.run('INSERT INTO season(guild_id,id,start_at,end_at,enabled) VALUES(?,?,?,?,1)',guild,seasonId,start,start+56*86400_000);
-   return {seasonId,start,end:start+56*86400_000};
+   const instanceId=seasonId+'_'+start;
+   this.store.run('INSERT INTO season(guild_id,id,start_at,end_at,enabled) VALUES(?,?,?,?,1)',guild,instanceId,start,start+56*86400_000);
+   return {seasonId:instanceId,start,end:start+56*86400_000};
   });
  }
  seasonStatus(guild:string,user:string):unknown{return this.store.tx(()=>{
@@ -266,7 +267,7 @@ export class Game {
    let claims=0;
    for(const s of expired){
     const eligible=this.store.all<{id:string;guild_id:string;user_id:string;xp:number;representative:string|null;deleted:number;season_xp:number}>(
-      'SELECT p.*,sp.xp AS season_xp FROM season_progress sp JOIN players p ON sp.player_id=p.id WHERE p.guild_id=? AND sp.season=?',s.guild_id,s.id);
+      'SELECT p.*,sp.xp AS season_xp FROM season_progress sp JOIN players p ON sp.player_id=p.id WHERE p.guild_id=? AND p.deleted=0 AND sp.season=?',s.guild_id,s.id);
     for(const player of eligible)for(let tier=1;tier<=seasonTier(player.season_xp);tier++)if(this.grantPass(player,s.id,tier,now))claims++;
     this.store.run('UPDATE season SET settled=1 WHERE guild_id=? AND id=?',s.guild_id,s.id);
    }
