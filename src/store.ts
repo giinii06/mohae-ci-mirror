@@ -40,6 +40,7 @@ export class Store {
  "CREATE TABLE IF NOT EXISTS season(guild_id TEXT NOT NULL,id TEXT NOT NULL,start_at INTEGER NOT NULL,end_at INTEGER NOT NULL,enabled INTEGER NOT NULL DEFAULT 0,settled INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(guild_id,id))",
  "CREATE TABLE IF NOT EXISTS season_progress(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,xp INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(player_id,season))",
  "CREATE TABLE IF NOT EXISTS season_claims(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,tier INTEGER NOT NULL,PRIMARY KEY(player_id,season,tier))",
+ "CREATE TABLE IF NOT EXISTS event_flags(guild TEXT NOT NULL,season TEXT NOT NULL,event_id TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(guild,season,event_id))",
  "CREATE TABLE IF NOT EXISTS event_claims(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,event_id TEXT NOT NULL,PRIMARY KEY(player_id,season,event_id))",
  "CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,guild TEXT NOT NULL,reporter TEXT NOT NULL,target TEXT,reason TEXT NOT NULL,details TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'open',created INTEGER NOT NULL)",
  "CREATE TABLE IF NOT EXISTS guild_config(guild TEXT PRIMARY KEY,chat_channels TEXT NOT NULL DEFAULT '[]',voice_channels TEXT NOT NULL DEFAULT '[]',report_channel TEXT,enabled INTEGER NOT NULL DEFAULT 1)",
