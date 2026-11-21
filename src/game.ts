@@ -54,7 +54,7 @@ export class Game {
  private giveCard(p:Person,characterId:string,source:string,at:number):string {
   const c=characterMap.get(characterId);bad(c,'INVALID_CHARACTER');
   const id=randomUUID();
-  this.store.run('INSERT INTO cards(id,player_id,character,rarity,acquired,source) VALUES(?,?,?,?,?,?)',id,p.id,c.rarity,at,source);
+  this.store.run('INSERT INTO cards(id,player_id,character,rarity,acquired,source) VALUES(?,?,?,?,?,?)',id,p.id,characterId,c.rarity,at,source);
   this.store.run('INSERT OR IGNORE INTO discoveries(player_id,character,at) VALUES(?,?,?)',p.id,characterId,at);
   return id;
  }
@@ -189,11 +189,11 @@ export class Game {
  });}
  private challenge(game:string):{question:string;answer:string;choices:string[]} {
   switch(game){
-   case 'deduction':return {question:'단서: 2, 4, 다음 수는?',answer:'6',choices:['5','6','7']};
-   case 'memory':return {question:'카드 4쌍의 글자 순서 A B C D 를 기억하고 입력하세요.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
-   case 'treasure':return {question:'보물이 숨은 장소를 골라 주세요.',answer:'B',choices:['A','B','C']};
+   case 'deduction':return {question:'ë¨ì: 2, 4, ë¤ì ìë?',answer:'6',choices:['5','6','7']};
+   case 'memory':return {question:'ì¹´ë 4ìì ê¸ì ìì A B C D ë¥¼ ê¸°ìµíê³  ìë ¥íì¸ì.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
+   case 'treasure':return {question:'ë³´ë¬¼ì´ ì¨ì ì¥ìë¥¼ ê³¨ë¼ ì£¼ì¸ì.',answer:'B',choices:['A','B','C']};
    case 'quiz':return {question:'2 + 3 = ?',answer:'5',choices:['4','5','6']};
-   case 'dice':return {question:'주사위 결과를 확인하려면 굴리기를 선택하세요.',answer:'roll',choices:['roll']};
+   case 'dice':return {question:'ì£¼ì¬ì ê²°ê³¼ë¥¼ íì¸íë ¤ë©´ êµ´ë¦¬ê¸°ë¥¼ ì ííì¸ì.',answer:'roll',choices:['roll']};
    default:throw new GameError('INVALID_MINIGAME');
   }
  }
