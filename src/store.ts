@@ -12,7 +12,7 @@ export class Store {
  run(sql:string,...params:(string|number|null)[]):void{this.db.query(sql).run(...params);}
  get<T=any>(sql:string,...params:(string|number|null)[]):T|undefined{return this.db.query(sql).get(...params) as T|undefined;}
  all<T=any>(sql:string,...params:(string|number|null)[]):T[]{return this.db.query(sql).all(...params) as T[];}
- tx<T>(fn:()=>T):T{return this.db.transaction(fn,'immediate')();}
+ tx<T>(fn:()=>T):T{return this.db.transaction(fn).immediate();}
  close():void{this.db.close();}
  private migrate():void{this.db.exec([
  "CREATE TABLE IF NOT EXISTS players(id TEXT PRIMARY KEY,guild_id TEXT NOT NULL,user_id TEXT NOT NULL,joined_at INTEGER NOT NULL,xp INTEGER NOT NULL DEFAULT 0 CHECK(xp>=0),representative TEXT,deleted INTEGER NOT NULL DEFAULT 0,UNIQUE(guild_id,user_id))",
