@@ -13,7 +13,7 @@ const keys:Record<Role,Buffer>={
  polly:createHash('sha256').update(secret('POLLY_API_KEY')).digest()
 };
 const permit:Record<Role,string[]>={
- mohae:['profile','export','journal','journal-delete','attendance','daily','weekly','weekly-claim','draw','draw-history','cards','collection','lock','dismantle','representative','affinity','mini-start','mini-finish','buy','equip','season','season-claim','season-activate','event','event-enable','event-claim','privacy-delete'],
+ mohae:['profile','export','journal','journal-delete','attendance','daily','weekly','weekly-claim','draw','draw-history','cards','collection','lock','dismantle','representative','affinity','mini-start','mini-finish','buy','equip','season','season-claim','season-activate','event','event-enable','event-claim','coop','coop-enable','coop-contribute','coop-claim','privacy-delete'],
  collector:['chat','voice'],polly:['report']
 };
 function reply(result:unknown,status=200):Response{return Response.json(result,{status,headers:{'Cache-Control':'no-store'}});}
@@ -63,6 +63,10 @@ async function dispatch(req:Request):Promise<Response>{
    case 'equip':result=game.equip(g,u,k,a.sku);break;
    case 'season':result=game.seasonStatus(g,u);break;
    case 'event':result=game.eventStatus(g,u);break;
+   case 'coop':result=game.coopStatus(g,u);break;
+   case 'coop-enable':result=game.enableCoop(g,a.target);break;
+   case 'coop-contribute':result=game.contributeCoop(g,u,k);break;
+   case 'coop-claim':result=game.claimCoop(g,u,k);break;
    case 'event-enable':result=game.enableEvent(g,a.eventId);break;
    case 'event-claim':result=game.claimEvent(g,u,k,a.eventId);break;
    case 'season-claim':result=game.claimSeason(g,u,k,a.tier);break;

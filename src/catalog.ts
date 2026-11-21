@@ -18,9 +18,10 @@ export const bannerMap=new Map(banners.map(x=>[x.id,x]));
 export const questTopics=['praise','good_day','thanks','self_comfort','rest'] as const;
 export const miniGames=['deduction','memory','treasure','quiz','dice'] as const;
 export const cosmetics:Cosmetic[]=[
-  ...([10,15,25,40,60,80,120].map((p,i)=>({id:'shop_'+['expression','sticker','badge','frame','pose','background','theme'][i],name:'[ëë¯¸] ê¾¸ë¯¸ê¸° '+(i+1),kind:['expression','sticker','badge','frame','pose','background','theme'][i],price:p,currency:'SHARD' as const}))),
-  ...Array.from({length:20},(_,i)=>({id:'season_reward_'+(i+1),name:'[ëë¯¸] ìì¦ ë³´ì '+(i+1),kind:'season',price:0,currency:'SHARD' as const}))
+  ...([10,15,25,40,60,80,120].map((p,i)=>({id:'shop_'+['expression','sticker','badge','frame','pose','background','theme'][i],name:'[Ã«ÂÂÃ«Â¯Â¸] ÃªÂ¾Â¸Ã«Â¯Â¸ÃªÂ¸Â° '+(i+1),kind:['expression','sticker','badge','frame','pose','background','theme'][i],price:p,currency:'SHARD' as const}))),
+  ...Array.from({length:20},(_,i)=>({id:'season_reward_'+(i+1),name:'[Ã«ÂÂÃ«Â¯Â¸] Ã¬ÂÂÃ¬Â¦Â Ã«Â³Â´Ã¬ÂÂ '+(i+1),kind:'season',price:0,currency:'SHARD' as const}))
 ];
+cosmetics.push({id:'dummy_coop_badge',name:'[더미] 협동 완료 배지',kind:'badge',price:0,currency:'SHARD'});
 export const cosmeticMap=new Map(cosmetics.map(x=>[x.id,x]));
 export type Grant={currency?:'MOHAE'|'SHARD'|'TICKET';amount?:number;cosmetic?:string;character?:string};
 export const seasonRewards:Grant[]=Array.from({length:20},(_,i)=>{
