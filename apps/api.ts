@@ -13,7 +13,7 @@ const keys:Record<Role,Buffer>={
  polly:createHash('sha256').update(secret('POLLY_API_KEY')).digest()
 };
 const permit:Record<Role,string[]>={
- mohae:['profile','export','journal','journal-delete','attendance','daily','weekly','weekly-claim','draw','draw-history','cards','collection','lock','dismantle','representative','affinity','mini-start','mini-finish','buy','equip','season','season-claim','season-activate','event','event-enable','event-claim','coop','coop-enable','coop-contribute','coop-claim','privacy-delete'],
+ mohae:['profile','public-profile','visibility','export','journal','journal-delete','attendance','daily','weekly','weekly-claim','draw','draw-history','cards','collection','lock','dismantle','representative','affinity','mini-start','mini-finish','buy','equip','season','season-claim','season-activate','event','event-enable','event-claim','coop','coop-enable','coop-contribute','coop-claim','privacy-delete'],
  collector:['chat','voice'],polly:['report']
 };
 function reply(result:unknown,status=200):Response{return Response.json(result,{status,headers:{'Cache-Control':'no-store'}});}
@@ -42,6 +42,8 @@ async function dispatch(req:Request):Promise<Response>{
   let result:unknown;
   switch(a.action){
    case 'profile':result=game.profile(g,u);break;
+   case 'public-profile':result=game.publicProfile(g,u,a.target);break;
+   case 'visibility':result=game.visibility(g,u,k,a.visible);break;
    case 'export':result=game.exportData(g,u);break;
    case 'journal':result=game.journal(g,u,a.day);break;
    case 'journal-delete':result=game.journalDelete(g,u,k,a.day);break;

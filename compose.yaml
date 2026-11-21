@@ -24,7 +24,10 @@ services:
     restart: unless-stopped
     environment:
       <<: *common
+      MOHAE_COLOR_ROLE_IDS: ${MOHAE_COLOR_ROLE_IDS:-}
     secrets: [mohae_bot_token, mohae_api_key]
+    # Role colors are only enabled when all twelve pre-created role IDs are configured.
+
     networks: [backend]
     depends_on:
       game-api: {condition: service_healthy}
