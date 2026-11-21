@@ -1,40 +1,95 @@
-# MOHAE — three independent Discord bots
+# MOHAE | Three-Bot Discord Collection Game
 
-A Discord collection game built with TypeScript + Bun + SQLite. Contains **27 dummy characters** (person1–person27), dummy mini-games, quests, season rewards and cosmetics. There are **no stories, dialogue, story choices or AI chat**.
+MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository is a working implementation branch of the original MOHAE game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
 
-## Services
+**This release contains entirely dummy content** (person1 to person27, dummy minigames, cosmetics, quests and season events). **Stories, dialogue, story options and AI chat are excluded on purpose.** Card trading was explicitly deferred to a later release in the design document and is disabled.
 
-| Service | Responsibility | Credential |
-|---|---|---|
-| mohae-bot | Game commands, gacha, collection, cosmetics, season | mohae_bot_token |
-| collector-bot | Counts eligible messages and voice minutes; never reads message bodies or recordings | collector_bot_token |
-| polly-bot | Private reports via /신고 | polly_bot_token |
-| game-api | Sole DB writer; economy, pity, cards and claims | Three role-specific API secrets |
+## Architecture
 
-## Local use
+~~~mermaid
+flowchart TD
+  A[MOHAE Discord app] --> B[mohae-bot]
+  C[Collector Discord app] --> D[collector-bot]
+  E[Polly Discord app] --> F[polly-bot]
+  B -->|"MOHAE_API_KEY"| G[game-api]
+  D -->|"COLLECTOR_API_KEY"| G
+  F -->|"POLLY_API_KEY"| G
+  G --> H[(SQLite durable Docker volume)]
+~~~
 
-1. Create three **different Discord applications and bot tokens**; invite all three to a test guild. The collector bot needs GuildMessages and GuildVoiceStates intents, not privileged MessageContent.
-2. Copy .env.example to .env and replace all example Discord snowflake IDs. The guild and eligible channel allowlists are mandatory.
-3. Run **bash deploy/init-secrets.sh**. Enter the three tokens without storing them in .env or Git.
-4. Run **docker compose up --build -d**.
-5. Run **docker compose ps** and **docker compose logs --tail=100**. Require three individual READY log messages and healthy game-api.
-6. Use /출석, /일퀘, four /미니게임 completions, and activity bonuses to earn up to 150 MOHAE/day; /뽑기 costs 150.
-7. To stop without deleting all game data: **docker compose down**. Do **not** use down -v.
+**Only game-api reads/writes the database.** All authenticated internal API keys are role-limited. Personal in-game messages are ephemeral. Collector counts messages and voice membership without storing message bodies or recording audio.
 
-Only game-api mounts the SQLite volume. The API is not published to the host; each bot has only its own token and role-specific API key. The API validates a non-empty guild allowlist.
+## Getting started (Docker Compose)
 
-## Guarantees
+1. Create **three** Discord applications in the Developer Portal and invite all three to the same private test server. Collector must have the Gateway guild message and voice state intents. Do not grant message-content intent merely for rewards.
+2. Copy .env.example to .env and edit the guild/channel IDs. Configure a locked moderator-only report channel for Polly.
+3. Run bash deploy/init-secrets.sh. Enter the three bot tokens interactively. This script also generates the three service API keys and an AES-256-GCM journal encryption key.
+4. Run docker compose config --quiet.
+5. Run docker compose up --build -d.
+6. Run docker compose ps and docker compose logs --tail=100. Verify **four running processes and three distinct Discord bot identities**.
+7. Run a manual smoke test in the test guild, following docs/operations.md. Docker configuration validation is not proof of actual Discord connectivity.
 
-* Monetary debits/credits, card instances, discoveries, pity counters and draw receipts commit in one SQLite transaction.
-* The same request ID returns the original receipt; retries do not grant a second reward.
-* 10x draws are sequential internally, all-or-nothing externally. 3-star probability: 2% before pull 41; +3 percentage points from 41 to 59; guaranteed at 60. 2+ guaranteed at 10. Limited pickup guaranteed at 70.
-* Server-local accounts use KST day boundaries at 05:00.
-* Seasons and limited banners are not automatically published. Authorized guild admins run /시즌시작 to activate a Monday-start 56-day dummy season.
-* Daily journal content is not collected. Reports are private and do not generate game currency.
-* Trading is excluded from v1 as an explicitly postponed feature; it needs a separate escrow implementation.
+Secrets are files under secrets/, deliberately ignored by Git. Never put real bot tokens in source files, logs or .env.example. Only game-api mounts the SQLite volume. **Never use docker compose down -v** unless explicitly destroying all stored accounts, cards and balances.
 
-## Validation and release gate
+## Game overview
 
-Run **bun run typecheck**, **bun test**, **bun run build**. GitLab CI executes all three. Passing CI alone does **not** prove a live three-token Discord login, Docker startup, offsite backup/restore or production security review. Real bot smoke tests require the three private tokens and target Discord guild.
+| Feature | Status |
+|---|---|
+| Daily attendance and reflection quest | Implemented |
+| Weekly progress and previous-week claim | Implemented |
+| 1 / 10 draw and standard / limited pity state | Implemented |
+| 27 dummy characters, owned cards, discovery book, duplicate dismantle | Implemented |
+| Cosmetic shop, profile, privacy visibility, 12 optional color roles | Implemented |
+| Affinity points with daily limits, no dialogue | Implemented |
+| Five dummy interactive minigames with completion rewards | Implemented |
+| Message/voice activity counted by Collector only | Implemented with conservative eligibility |
+| 56-day season, 20 tiers, automatic expired-tier settlement | Implemented |
+| Three dummy events and server cooperative progress | Implemented |
+| Polly private reports, staff triage, status, rate limits | Implemented |
+| Opt-in encrypted private journal and owner data export/delete | Implemented |
+| Character stories, narrative, choices, AI chat | Explicitly excluded |
+| Card-to-card trading | Deferred (initial version) |
+| Real art/music, real character biographies | Dummy placeholders, as requested |
+| Production deployment and live three-token Discord test | Not yet verified |
 
-This is a testable implementation branch, not a claim that every optional future feature of the original 26-page guide has shipped. See the merge request description for current gaps.
+The game day begins at **05:00 Asia/Seoul**, Monday for game weeks. Attendance +40 MOHAE, daily quest +60, four rewarded minigames +40 and chat/voice activities +10 give the normal maximum **150 MOHAE per day**, plus weekly/event rewards. One draw costs 150 MOHAE, ten draw costs 1,500, or free tickets. Gacha uses 1/2/3 star base chances of 83/15/2%, a maximum 60-pull 3-star guarantee and maximum 70-pull limited pickup guarantee.
+
+## Structure
+
+~~~text
+apps/
+  api.ts         # game-api, only database writer
+  mohae.ts       # MOHAE Discord application commands
+  collector.ts   # independent Collector Discord app
+  polly.ts       # independent Polly Discord app
+src/
+  store.ts       # SQLite schema and transactions
+  game.ts        # economy, inventory, quest, season domain services
+  gacha.ts       # cryptographically random pity engine
+  catalog.ts     # dummy persons and content IDs
+  time.ts        # KST day/week and season math
+  client.ts      # internal service client
+  secrets.ts     # file-mounted secrets and allowed guild
+  roles.ts       # safe 12-role palette validation
+tests/
+  game.test.ts   # economic invariants and behavior
+  api.test.ts    # local API authorization and request replay
+deploy/
+  init-secrets.sh
+  backup.sh
+compose.yaml
+Dockerfile
+.gitlab-ci.yml
+docs/
+  architecture.md
+  game-rules.md
+  operations.md
+~~~
+
+## Development and verification
+
+Run bun install then bun run check locally, or use the GitLab CI pipeline. Every push runs typecheck, Bun tests, four Bun builds, shell syntax and a Docker Compose configuration check. The API test launches a real local game-api process with **fake credentials**.
+
+**Do not mistake a green CI pipeline for full operational readiness:** the Docker containers have not been booted in a live target host, the three Discord bot tokens have not been supplied and the Discord Gateway and live slash commands have not yet been tested. A backup restore rehearsal, security review and production privacy policy are necessary before real users.
+
+More detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
