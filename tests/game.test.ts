@@ -71,7 +71,7 @@ describe('Transactional gameplay',()=>{
    advance(2000);
    expect((game.miniFinish(G,U,'mini-finish'+i,s.id,'roll') as any).rewarded).toBe(true);
   }
-  for(let i=0;i<10;i++){advance(60000);game.chat(G,U,'chat'+i,('900000000000000000'+i).slice(0,18));}
+  for(let i=0;i<10;i++){advance(60000);game.chat(G,U,'chat'+i,String(900000000000000000n+BigInt(i)));}
   expect((game.profile(G,U) as any).balances.MOHAE).toBe(150);
   const r=game.draw(G,U,'draw1','standard',1) as any;
   expect(r.results).toHaveLength(1);
