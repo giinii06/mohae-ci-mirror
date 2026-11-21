@@ -116,3 +116,101 @@ describe('Transactional gameplay',()=>{
   expect((game.profile('456789012345678901',U) as any).balances.MOHAE).toBe(0);
  });
 });
+
+describe('Extended gameplay and privacy',()=>{
+ test('Opt-in diary is encrypted at rest, exportable only through player identity, and deletable',()=>{
+  process.env.JOURNAL_KEY='ab'.repeat(32);
+  const {game,store}=setup();
+  const response=game.daily(G,U,'daily-note-1','good_day','private personal note',true) as any;
+  expect(response.journalSaved).toBe(true);
+  const raw=store.get<{ciphertext:string}>('SELECT ciphertext FROM journals')!;
+  expect(raw.ciphertext).not.toContain('private personal note');
+  expect((game.journal(G,U) as any).note).toBe('private personal note');
+  expect((game.exportData(G,U) as any).journals[0].note).toBe('private personal note');
+  expect((game.journal(G,V) as any).note).toBe(null);
+  game.journalDelete(G,U,'journal-delete-1');
+  expect((game.journal(G,U) as any).note).toBe(null);
+  delete process.env.JOURNAL_KEY;store.close();
+ });
+ test('Diary text is not retained without explicit consent',()=>{
+  const {game,store}=setup();
+  game.daily(G,U,'daily-private-1','rest','should be discarded',false);
+  expect(store.get<{n:number}>('SELECT COUNT(*) n FROM journals')?.n).toBe(0);
+  store.close();
+ });
+ test('Post-season auto-settlement grants all unlocked tiers once; a new season can start',()=>{
+  const {game,store,advance}=setup();
+  const start=kstMondayFiveMs('2026-11-23');
+  const first=game.activateSeason(G,'dummy_season_01',start) as any;
+  game.profile(G,U);
+  const player=store.get<{id:string}>('SELECT id FROM players WHERE user_id=?',U)!.id;
+  store.run('INSERT INTO season_progress(player_id,season,xp) VALUES(?,?,5000)',player,first.seasonId);
+  advance(56*86400_000);
+  const end=game.settleExpired();
+  expect(end.seasons).toBe(1);expect(end.claims).toBe(20);
+  expect(game.settleExpired().claims).toBe(0);
+  const profile=game.profile(G,U) as any;
+  expect(profile.balances.TICKET).toBe(10);
+  expect(profile.balances.SHARD).toBe(100);
+  expect((game.collection(G,U) as any[]).some(x=>x.character==='person27')).toBe(true);
+  const next=game.activateSeason(G,'dummy_season_01',start+56*86400_000) as any;
+  expect(next.seasonId).not.toBe(first.seasonId);
+  store.close();
+ });
+ test('Server cooperative goal enforces 3-per-day and grants only contributing users',()=>{
+  const {game,advance}=setup();
+  game.activateSeason(G,'dummy_season_01',kstMondayFiveMs('2026-11-23'));
+  game.enableCoop(G,5);
+  for(let i=0;i<3;i++)game.contributeCoop(G,U,'coop-a-'+i);
+  expect(()=>game.contributeCoop(G,U,'coop-a-4')).toThrow('COOP_DAILY_LIMIT');
+  expect(()=>game.claimCoop(G,U,'coop-claim-early')).toThrow('COOP_NOT_COMPLETE');
+  for(let i=0;i<2;i++)game.contributeCoop(G,V,'coop-b-'+i);
+  expect((game.coopStatus(G,U) as any).total).toBe(5);
+  expect((game.claimCoop(G,U,'coop-claim-a') as any).claimed).toBe(true);
+  expect((game.claimCoop(G,V,'coop-claim-b') as any).claimed).toBe(true);
+  expect((game.claimCoop(G,V,'coop-claim-c') as any).claimed).toBe(false);
+ });
+ test('Week-4 opt-in dummy event pays once when 5 daily quests are completed',()=>{
+  const {game,advance}=setup();
+  game.activateSeason(G,'dummy_season_01',kstMondayFiveMs('2026-11-23'));
+  advance(21*86400_000);
+  game.enableEvent(G,'dummy_event_04');
+  for(let i=0;i<5;i++){game.daily(G,U,'event-daily-'+i,'rest');advance(86400_000);}
+  const status=game.eventStatus(G,U) as any;
+  expect(status.events.find((e:any)=>e.id==='dummy_event_04').progress).toBe(5);
+  expect((game.claimEvent(G,U,'event-claim-1','dummy_event_04') as any).mohae).toBe(200);
+  expect((game.claimEvent(G,U,'event-claim-2','dummy_event_04') as any).claimed).toBe(false);
+ });
+ test('20 eligible voice minutes pays at most the shared daily 10 MOHAE',()=>{
+  const {game,advance}=setup();
+  for(let i=0;i<5;i++){game.chat(G,U,'voice-chat-'+i,String(800000000000000000n+BigInt(i)));advance(60000);}
+  expect((game.profile(G,U) as any).balances.MOHAE).toBe(5);
+  for(let i=0;i<20;i++){game.voice(G,U,'voice-piece-'+i,60);advance(60000);}
+  expect((game.profile(G,U) as any).balances.MOHAE).toBe(10);
+ });
+ test('10-pull is one economic operation that generates exactly ten distinct card instances',()=>{
+  const {game,store}=setup();
+  game.profile(G,U);
+  const player=store.get<{id:string}>('SELECT id FROM players WHERE user_id=?',U)!.id;
+  store.run('INSERT INTO wallets(player_id,currency,balance) VALUES(?,?,?)',player,'MOHAE',1500);
+  const result=game.draw(G,U,'ten-pull-1','standard',10) as any;
+  expect(result.results).toHaveLength(10);
+  expect(new Set(result.results.map((x:any)=>x.cardId)).size).toBe(10);
+  expect((game.profile(G,U) as any).balances.MOHAE).toBe(0);
+  expect(game.draw(G,U,'ten-pull-1','standard',10)).toEqual(result);
+  expect((game.cards(G,U) as any[]).length).toBe(10);
+  store.close();
+ });
+ test('Privacy delete anonymizes account, removes encrypted journal, and permits fresh account',()=>{
+  process.env.JOURNAL_KEY='cd'.repeat(32);
+  const {game,store}=setup();
+  game.daily(G,U,'privacy-daily','rest','sensitive information',true);
+  const old=store.get<{id:string}>('SELECT id FROM players WHERE user_id=?',U)!.id;
+  expect((game.privacyDelete(G,U,'privacy-delete') as any).deleted).toBe(true);
+  expect(store.get<{n:number}>('SELECT COUNT(*) n FROM journals')?.n).toBe(0);
+  game.profile(G,U);
+  const fresh=store.get<{id:string}>('SELECT id FROM players WHERE user_id=?',U)!.id;
+  expect(fresh).not.toBe(old);
+  delete process.env.JOURNAL_KEY;store.close();
+ });
+});
