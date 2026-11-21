@@ -1,0 +1,22 @@
+{
+  "name": "mohae",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:api": "bun apps/api.ts",
+    "start:mohae": "bun apps/mohae.ts",
+    "start:collector": "bun apps/collector.ts",
+    "start:polly": "bun apps/polly.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "build": "bun build ./apps/api.ts ./apps/mohae.ts ./apps/collector.ts ./apps/polly.ts --target=bun --outdir=dist",
+    "check": "bun run typecheck && bun test && bun run build"
+  },
+  "dependencies": {
+    "discord.js": "^14.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/bun": "^1.3.0"
+  }
+}
