@@ -6,7 +6,7 @@ import {allowedGuild,secret,type Role} from '../src/secrets.ts';
 const store=new Store(process.env.DATABASE_PATH||'/data/mohae.sqlite');
 const game=new Game(store);
 game.settleExpired();
-setInterval(()=>{try{game.settleExpired();}catch(e){console.error('Season settlement failed',e);}},3600000);
+const settlementTimer=setInterval(()=>{try{game.settleExpired();}catch(e){console.error('Season settlement failed',e);}},3600000);
 const keys:Record<Role,Buffer>={
  mohae:createHash('sha256').update(secret('MOHAE_API_KEY')).digest(),
  collector:createHash('sha256').update(secret('COLLECTOR_API_KEY')).digest(),
@@ -94,4 +94,4 @@ async function dispatch(req:Request):Promise<Response>{
 }
 const server=Bun.serve({port:Number(process.env.PORT||3000),hostname:'0.0.0.0',fetch:dispatch});
 console.log('MOHAE game-api listening on port',server.port);
-process.on('SIGTERM',()=>{server.stop();store.close();});
+process.on('SIGTERM',()=>{clearInterval(settlementTimer);server.stop();store.close();process.exit(0);});
