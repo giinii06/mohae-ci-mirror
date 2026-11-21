@@ -43,8 +43,8 @@ export class Game {
   this.store.run('INSERT INTO ledger(id,player_id,currency,delta,source,at) VALUES(?,?,?,?,?,?)',randomUUID(),p,c,delta,source,now);
  }
  private season(guild:string,at:number):{id:string;start_at:number;end_at:number}|undefined {
-  const s=this.store.get<{id:string;start_at:number;end_at:number;enabled:number}>('SELECT * FROM season WHERE guild_id=?',guild);
-  return s?.enabled&&s.start_at<=at&&at<s.end_at?s:undefined;
+  const s=this.store.get<{id:string;start_at:number;end_at:number;enabled:number}>('SELECT * FROM season WHERE guild_id=? AND enabled=1 AND start_at<=? AND end_at>? ORDER BY start_at DESC LIMIT 1',guild,at,at);
+  return s;
  }
  private addXp(p:Person,xp:number,seasonXp:number,at:number):void {
   this.store.run('UPDATE players SET xp=xp+? WHERE id=?',xp,p.id);
@@ -189,11 +189,11 @@ export class Game {
  });}
  private challenge(game:string):{question:string;answer:string;choices:string[]} {
   switch(game){
-   case 'deduction':return {question:'ë¨ì: 2, 4, ë¤ì ìë?',answer:'6',choices:['5','6','7']};
-   case 'memory':return {question:'ì¹´ë 4ìì ê¸ì ìì A B C D ë¥¼ ê¸°ìµíê³  ìë ¥íì¸ì.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
-   case 'treasure':return {question:'ë³´ë¬¼ì´ ì¨ì ì¥ìë¥¼ ê³¨ë¼ ì£¼ì¸ì.',answer:'B',choices:['A','B','C']};
+   case 'deduction':return {question:'Ã«ÂÂ¨Ã¬ÂÂ: 2, 4, Ã«ÂÂ¤Ã¬ÂÂ Ã¬ÂÂÃ«ÂÂ?',answer:'6',choices:['5','6','7']};
+   case 'memory':return {question:'Ã¬Â¹Â´Ã«ÂÂ 4Ã¬ÂÂÃ¬ÂÂ ÃªÂ¸ÂÃ¬ÂÂ Ã¬ÂÂÃ¬ÂÂ A B C D Ã«Â¥Â¼ ÃªÂ¸Â°Ã¬ÂÂµÃ­ÂÂÃªÂ³Â  Ã¬ÂÂÃ«Â Â¥Ã­ÂÂÃ¬ÂÂ¸Ã¬ÂÂ.',answer:'ABCD',choices:['ABCD','DCBA','BACD']};
+   case 'treasure':return {question:'Ã«Â³Â´Ã«Â¬Â¼Ã¬ÂÂ´ Ã¬ÂÂ¨Ã¬ÂÂ Ã¬ÂÂ¥Ã¬ÂÂÃ«Â¥Â¼ ÃªÂ³Â¨Ã«ÂÂ¼ Ã¬Â£Â¼Ã¬ÂÂ¸Ã¬ÂÂ.',answer:'B',choices:['A','B','C']};
    case 'quiz':return {question:'2 + 3 = ?',answer:'5',choices:['4','5','6']};
-   case 'dice':return {question:'ì£¼ì¬ì ê²°ê³¼ë¥¼ íì¸íë ¤ë©´ êµ´ë¦¬ê¸°ë¥¼ ì ííì¸ì.',answer:'roll',choices:['roll']};
+   case 'dice':return {question:'Ã¬Â£Â¼Ã¬ÂÂ¬Ã¬ÂÂ ÃªÂ²Â°ÃªÂ³Â¼Ã«Â¥Â¼ Ã­ÂÂÃ¬ÂÂ¸Ã­ÂÂÃ«Â Â¤Ã«Â©Â´ ÃªÂµÂ´Ã«Â¦Â¬ÃªÂ¸Â°Ã«Â¥Â¼ Ã¬ÂÂ Ã­ÂÂÃ­ÂÂÃ¬ÂÂ¸Ã¬ÂÂ.',answer:'roll',choices:['roll']};
    default:throw new GameError('INVALID_MINIGAME');
   }
  }
@@ -237,8 +237,8 @@ export class Game {
   // At the requested Monday 05:00 KST exactly; never auto-publish.
   const d=gameDay(start);bad(kstMondayFiveMs(d)===start&&new Date(d+'T00:00:00Z').getUTCDay()===1,'SEASON_MUST_START_MONDAY_05');
   return this.store.tx(()=>{
-   const current=this.store.get<{id:string}>('SELECT id FROM season WHERE guild_id=?',guild);
-   bad(!current,'SEASON_ALREADY_CONFIGURED');
+   const current=this.store.get('SELECT 1 FROM season WHERE guild_id=? AND NOT (end_at<=? OR start_at>=?)',guild,start,start+56*86400_000);
+   bad(!current,'SEASON_OVERLAP');
    this.store.run('INSERT INTO season(guild_id,id,start_at,end_at,enabled) VALUES(?,?,?,?,1)',guild,seasonId,start,start+56*86400_000);
    return {seasonId,start,end:start+56*86400_000};
   });
@@ -250,18 +250,36 @@ export class Game {
   const claims=this.store.all<{tier:number}>('SELECT tier FROM season_claims WHERE player_id=? AND season=?',p.id,s.id).map(x=>x.tier);
   return {active:true,id:s.id,xp,tier:seasonTier(xp),claims,start:s.start_at,end:s.end_at};
  });}
+ private grantPass(p:Person,seasonId:string,tier:number,now:number):boolean {
+  if(this.store.get('SELECT 1 FROM season_claims WHERE player_id=? AND season=? AND tier=?',p.id,seasonId,tier))return false;
+  this.store.run('INSERT INTO season_claims(player_id,season,tier) VALUES(?,?,?)',p.id,seasonId,tier);
+  const grant=seasonRewards[tier-1];
+  if(grant.currency&&grant.amount)this.credit(p.id,grant.currency,grant.amount,'season:'+seasonId+':'+tier,now);
+  if(grant.cosmetic)this.store.run('INSERT OR IGNORE INTO cosmetics(player_id,sku,created) VALUES(?,?,?)',p.id,grant.cosmetic,now);
+  if(tier===20)this.giveCard(p,'person27','season:'+seasonId,now);
+  return true;
+ }
+ /** At expiration, automatically and atomically grant every unlocked unclaimed tier. */
+ settleExpired():{seasons:number;claims:number}{
+  return this.store.tx(()=>{
+   const now=this.now(),expired=this.store.all<{guild_id:string;id:string}>('SELECT guild_id,id FROM season WHERE end_at<=? AND settled=0',now);
+   let claims=0;
+   for(const s of expired){
+    const eligible=this.store.all<{id:string;guild_id:string;user_id:string;xp:number;representative:string|null;deleted:number;season_xp:number}>(
+      'SELECT p.*,sp.xp AS season_xp FROM season_progress sp JOIN players p ON sp.player_id=p.id WHERE p.guild_id=? AND sp.season=?',s.guild_id,s.id);
+    for(const player of eligible)for(let tier=1;tier<=seasonTier(player.season_xp);tier++)if(this.grantPass(player,s.id,tier,now))claims++;
+    this.store.run('UPDATE season SET settled=1 WHERE guild_id=? AND id=?',s.guild_id,s.id);
+   }
+   return {seasons:expired.length,claims};
+  });
+ }
  claimSeason(guild:string,user:string,key:string,tier:number):unknown{return this.op(guild,user,key,'season-claim',(p,now)=>{
   const s=this.season(guild,now);bad(s,'NO_ACTIVE_SEASON');
   bad(Number.isSafeInteger(tier)&&tier>=1&&tier<=20,'INVALID_TIER');
   const xp=this.store.get<{xp:number}>('SELECT xp FROM season_progress WHERE player_id=? AND season=?',p.id,s.id)?.xp??0;
   bad(seasonTier(xp)>=tier,'TIER_LOCKED');
-  if(this.store.get('SELECT 1 FROM season_claims WHERE player_id=? AND season=? AND tier=?',p.id,s.id,tier))return {claimed:false,tier};
-  this.store.run('INSERT INTO season_claims(player_id,season,tier) VALUES(?,?,?)',p.id,s.id,tier);
-  const grant=seasonRewards[tier-1];
-  if(grant.currency&&grant.amount)this.credit(p.id,grant.currency,grant.amount,'season:'+s.id+':'+tier,now);
-  if(grant.cosmetic)this.store.run('INSERT OR IGNORE INTO cosmetics(player_id,sku,created) VALUES(?,?,?)',p.id,grant.cosmetic,now);
-  if(tier===20)this.giveCard(p,'person27','season:'+s.id,now);
-  return {claimed:true,tier,grant,seasonCharacter:tier===20?'person27':null};
+  const claimed=this.grantPass(p,s.id,tier,now);
+  return {claimed,tier,grant:claimed?seasonRewards[tier-1]:null,seasonCharacter:claimed&&tier===20?'person27':null};
  });}
  report(guild:string,user:string,key:string,target:string|null,reason:string,details:string):unknown{return this.op(guild,user,key,'report',(p,now)=>{
   bad(['harassment','spam','fraud','other'].includes(reason),'INVALID_REASON');

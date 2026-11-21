@@ -5,6 +5,8 @@ import {allowedGuild,secret,type Role} from '../src/secrets.ts';
 
 const store=new Store(process.env.DATABASE_PATH||'/data/mohae.sqlite');
 const game=new Game(store);
+game.settleExpired();
+setInterval(()=>{try{game.settleExpired();}catch(e){console.error('Season settlement failed',e);}},3600000);
 const keys:Record<Role,Buffer>={
  mohae:createHash('sha256').update(secret('MOHAE_API_KEY')).digest(),
  collector:createHash('sha256').update(secret('COLLECTOR_API_KEY')).digest(),

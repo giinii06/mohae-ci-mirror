@@ -36,7 +36,7 @@ export class Store {
  "CREATE TABLE IF NOT EXISTS affinity_claims(player_id TEXT NOT NULL REFERENCES players(id),day TEXT NOT NULL,kind TEXT NOT NULL,PRIMARY KEY(player_id,day,kind))",
  "CREATE TABLE IF NOT EXISTS cosmetics(player_id TEXT NOT NULL REFERENCES players(id),sku TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(player_id,sku))",
  "CREATE TABLE IF NOT EXISTS equipped(player_id TEXT NOT NULL REFERENCES players(id),slot TEXT NOT NULL,sku TEXT NOT NULL,PRIMARY KEY(player_id,slot))",
- "CREATE TABLE IF NOT EXISTS season(guild_id TEXT PRIMARY KEY,id TEXT NOT NULL,start_at INTEGER NOT NULL,end_at INTEGER NOT NULL,enabled INTEGER NOT NULL DEFAULT 0)",
+ "CREATE TABLE IF NOT EXISTS season(guild_id TEXT NOT NULL,id TEXT NOT NULL,start_at INTEGER NOT NULL,end_at INTEGER NOT NULL,enabled INTEGER NOT NULL DEFAULT 0,settled INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(guild_id,id))",
  "CREATE TABLE IF NOT EXISTS season_progress(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,xp INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(player_id,season))",
  "CREATE TABLE IF NOT EXISTS season_claims(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,tier INTEGER NOT NULL,PRIMARY KEY(player_id,season,tier))",
  "CREATE TABLE IF NOT EXISTS event_claims(player_id TEXT NOT NULL REFERENCES players(id),season TEXT NOT NULL,event_id TEXT NOT NULL,PRIMARY KEY(player_id,season,event_id))",
