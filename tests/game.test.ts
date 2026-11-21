@@ -102,7 +102,7 @@ describe('Transactional gameplay',()=>{
   expect(()=>game.draw(G,U,'limited1','limited',1)).toThrow('BANNER_INACTIVE');
   const start=kstMondayFiveMs('2026-11-23');
   const result=game.activateSeason(G,'dummy_season_01',start) as any;
-  expect(result.seasonId).toStartWith('dummy_season_01_');
+  expect(result.seasonId.startsWith('dummy_season_01_')).toBe(true);
   expect((game.seasonStatus(G,U) as any).active).toBe(true);
  });
  test('Unowned or last-copy cards cannot be dismantled',()=>{
