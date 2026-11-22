@@ -137,7 +137,8 @@ export class Game {
    ledger:this.store.all('SELECT currency,delta,source,at FROM ledger WHERE player_id=? ORDER BY at DESC LIMIT 10000',p.id),
    attendance:this.store.all('SELECT day FROM attendance WHERE player_id=?',p.id),
    dailyQuests:this.store.all('SELECT day,topic FROM daily_quests WHERE player_id=?',p.id),
-   journals:rows.map(row=>({day:row.day,note:this.journalFor(p,row.day)}))};
+   journals:rows.map(row=>({day:row.day,note:this.journalFor(p,row.day)})),
+   submittedReports:this.store.all('SELECT id,target,reason,details,status,created FROM reports WHERE reporter=? AND guild=? ORDER BY created DESC',user,guild)};
  }
  private weeklyStatus(p:Person,week:string):{completed:string[];stats:Record<string,number>} {
   const start=Date.parse(week+'T00:00:00Z');const end=new Date(start+7*86400_000).toISOString().slice(0,10);

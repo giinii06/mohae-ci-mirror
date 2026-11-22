@@ -234,3 +234,18 @@ test('SQLite schema version is durable, upgrades legacy v0 and rejects future ve
   expect(()=>new Store(file)).toThrow('UNSUPPORTED_SCHEMA_VERSION');
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('Personal export includes only own submitted reports and excludes other reporters',()=>{
+ const {game,store}=setup();
+ const a=game.report(G,U,'report-export-1',V,'spam','A report written by U') as {reportId:string};
+ game.report(G,V,'report-export-2',U,'other','A report written by V');
+ const mine=game.exportData(G,U) as {submittedReports:{id:string;details:string}[]};
+ const other=game.exportData(G,V) as {submittedReports:{id:string;details:string}[]};
+ expect(mine.submittedReports).toHaveLength(1);
+ expect(mine.submittedReports[0]?.id).toBe(a.reportId);
+ expect(mine.submittedReports[0]?.details).toBe('A report written by U');
+ expect(other.submittedReports).toHaveLength(1);
+ expect(other.submittedReports[0]?.details).toBe('A report written by V');
+ store.close();
+});
