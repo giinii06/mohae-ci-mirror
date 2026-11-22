@@ -1,107 +1,147 @@
-# MOHAE | Three-Bot Discord Collection Game
+# MOHAE | 디스코드 캐릭터 수집 게임
 
-> **Looking for instructions as a player?** Start with the **[English Discord Player Guide](README_USER.md)**. It covers daily rewards, character draws, cards, seasons, privacy, and Polly reports.
+> **게임을 즐기는 일반 사용자라면 [MOHAE 한국어 사용자 안내서](README_USER.md)를 먼저 읽으세요.** 출석, 일일 퀘스트, 캐릭터 뽑기, 카드 관리, 시즌, 개인정보 설정, Polly 신고까지 단계별로 설명합니다.
 >
-> **Important:** The documentation is in English, but Discord commands retain their registered **Korean names**; the player guide shows their exact spelling.
+> 이 문서는 **개발자와 서버 운영자**를 위한 프로젝트 소개 및 설치 안내서입니다. 실제 디스코드 명령어는 한국어로 등록되어 있습니다.
 
-MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository contains the MOHAE v1 implementation from the original game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
+MOHAE는 **Bun + TypeScript + discord.js + SQLite**로 만든 독립 호스팅형 디스코드 수집 게임입니다. 서로 다른 토큰을 사용하는 **독립된 디스코드 봇 3개**와 내부 게임 API 프로세스 1개로 구성됩니다. 데이터베이스를 읽고 쓰는 작업은 게임 API만 수행합니다.
 
-**This release contains entirely dummy content** (person1 to person27, dummy minigames, cosmetics, quests and season events). **Stories, dialogue, story options and AI chat are excluded on purpose.** Card trading was explicitly deferred to a later release in the design document and is disabled.
+**현재 v1은 더미 콘텐츠로 구성되어 있습니다.** 캐릭터는 `person1`~`person27`이며 미니게임, 코스메틱, 퀘스트, 시즌 이벤트 역시 임시 데이터입니다. **캐릭터 스토리, 대화 선택지, AI 채팅은 의도적으로 제외**했고, 카드 거래는 추후 버전으로 미뤘습니다.
 
-## Architecture
+## 프로젝트 구성
+
+| 구성 요소 | 역할 |
+|---|---|
+| **MOHAE 봇** | 출석, 퀘스트, 뽑기, 카드, 도감, 시즌, 이벤트, 상점 및 개인정보 명령어 |
+| **Collector 봇** | 허용된 서버 채널의 채팅·음성 활동을 보수적으로 집계 |
+| **Polly 봇** | 비공개 신고 접수, 신고 상태 조회, 운영진의 신고 처리 |
+| **game-api** | 역할별 인증을 적용하는 내부 API와 유일한 SQLite 쓰기 프로세스 |
 
 ~~~mermaid
 flowchart TD
-  A[MOHAE Discord app] --> B[mohae-bot]
-  C[Collector Discord app] --> D[collector-bot]
-  E[Polly Discord app] --> F[polly-bot]
+  A[MOHAE 디스코드 봇] --> B[mohae-bot]
+  C[Collector 디스코드 봇] --> D[collector-bot]
+  E[Polly 디스코드 봇] --> F[polly-bot]
   B -->|"MOHAE_API_KEY"| G[game-api]
   D -->|"COLLECTOR_API_KEY"| G
   F -->|"POLLY_API_KEY"| G
-  G --> H[(SQLite durable Docker volume)]
+  G --> H[(SQLite 영구 Docker 볼륨)]
 ~~~
 
-**Only game-api reads/writes the database.** All authenticated internal API keys are role-limited. Personal in-game messages are ephemeral. Collector counts messages and voice membership without storing message bodies or recording audio.
+모든 내부 API 키는 서비스 역할별로 구분되며, 게임 관련 응답은 기본적으로 **명령어를 실행한 본인에게만 보이는 비공개 응답**입니다. Collector는 보상을 위한 메시지·음성 참여 이벤트만 집계하며, 메시지 본문을 저장하거나 음성을 녹음하지 않도록 구현되어 있습니다.
 
-## Getting started (Docker Compose)
+## Docker Compose로 시작하기
 
-1. Create **three** Discord applications in the Developer Portal and invite all three to the same private test server. Collector must have the Gateway guild message and voice state intents. Do not grant message-content intent merely for rewards.
-2. Copy .env.example to .env and edit the guild/channel IDs. Configure a locked moderator-only report channel for Polly.
-3. Run bash deploy/init-secrets.sh. Enter the three bot tokens interactively. This script also generates the three service API keys and an AES-256-GCM journal encryption key.
-4. Run docker compose config --quiet.
-5. Run docker compose up --build -d.
-6. Run docker compose ps and docker compose logs --tail=100. Verify **four running processes and three distinct Discord bot identities**.
-7. Run a manual smoke test in the test guild, following docs/operations.md. Docker configuration validation is not proof of actual Discord connectivity.
+**전제 조건:** Docker와 Docker Compose를 실행할 수 있는 호스트, 그리고 서로 다른 디스코드 애플리케이션 3개가 필요합니다. 처음에는 실제 운영 서버가 아닌 **비공개 테스트 서버**에서 확인하세요.
 
-Secrets are files under secrets/, deliberately ignored by Git. Never put real bot tokens in source files, logs or .env.example. Only game-api mounts the SQLite volume. **Never use docker compose down -v** unless explicitly destroying all stored accounts, cards and balances.
+1. [Discord Developer Portal](https://discord.com/developers/applications)에서 **MOHAE, Collector, Polly**용 애플리케이션을 각각 생성하고, 세 봇을 같은 비공개 테스트 서버에 초대합니다. Collector에는 서버 메시지 및 음성 상태 인텐트가 필요합니다. 보상 집계만을 이유로 메시지 본문 인텐트를 활성화할 필요는 없습니다.
+2. `.env.example`을 `.env`로 복사하고 허용할 서버·채널 ID를 기입합니다. Polly 신고 알림용 채널은 **운영진만 열람 가능하도록 비공개**로 설정합니다.
+3. `bash deploy/init-secrets.sh`를 실행해 봇 토큰 3개를 안전하게 입력합니다. 이 스크립트가 API 역할 키 3개와 일지 암호화용 AES-256-GCM 키를 함께 생성합니다.
+4. Docker 설정을 검사합니다.
 
-## Game overview
+   ~~~bash
+   docker compose config --quiet
+   ~~~
 
-| Feature | Status |
+5. 컨테이너 4개를 빌드하고 실행합니다.
+
+   ~~~bash
+   docker compose up --build -d
+   ~~~
+
+6. 서비스 상태와 로그를 확인합니다.
+
+   ~~~bash
+   docker compose ps
+   docker compose logs --tail=100
+   ~~~
+
+7. 테스트 서버에서 실제로 **세 봇이 서로 다른 계정으로 접속했는지**, 슬래시 명령어와 보상·신고·DB 지속성이 정상인지 [운영 안내서](docs/operations.md)의 수동 점검 절차로 검증합니다. **Compose 설정 검사는 디스코드 연결 성공을 보장하지 않습니다.**
+
+### 비밀키 및 데이터 보관 주의사항
+
+- 비밀키는 Git 추적 대상에서 제외한 `secrets/` 폴더에 저장합니다. 실제 토큰을 소스 파일, 로그, `.env.example` 또는 이슈에 붙여넣지 마세요.
+- SQLite 영구 볼륨은 **game-api에만** 연결합니다. 다른 봇이 DB를 직접 수정하지 않도록 합니다.
+- 백업 전에는 [운영 안내서](docs/operations.md)의 중단·복구 절차를 확인하세요.
+- **`docker compose down -v`는 게임 계정, 보유 카드, 재화 등 모든 영구 볼륨 데이터를 삭제할 수 있으므로 일반적인 종료에 사용하지 마세요.**
+
+## 주요 기능과 구현 범위
+
+| 기능 | 구현 상태 |
 |---|---|
-| Daily attendance and reflection quest | Implemented |
-| Weekly progress and previous-week claim | Implemented |
-| 1 / 10 draw and standard / limited pity state | Implemented |
-| 27 dummy characters, owned cards, discovery book, duplicate dismantle | Implemented |
-| Cosmetic shop, profile, privacy visibility, 12 optional color roles | Implemented |
-| Affinity points with daily limits, no dialogue | Implemented |
-| Five dummy interactive minigames with completion rewards | Implemented |
-| Message/voice activity counted by Collector only | Implemented with conservative eligibility |
-| 56-day season, 20 tiers, automatic expired-tier settlement | Implemented |
-| Three dummy events and server cooperative progress | Implemented |
-| Polly private reports, staff triage, status, rate limits | Implemented |
-| Opt-in encrypted private journal and owner data export/delete | Implemented |
-| Character stories, narrative, choices, AI chat | Explicitly excluded |
-| Card-to-card trading | Deferred (initial version) |
-| Real art/music, real character biographies | Dummy placeholders, as requested |
-| Production deployment and live three-token Discord test | Not yet verified |
+| 일일 출석 및 자기 성찰 퀘스트 | 구현됨 |
+| 주간 진행 상황과 보상 수령 | 구현됨 |
+| 1회/10회 뽑기, 상시·한정 배너별 천장 | 구현됨 |
+| 더미 캐릭터 27종, 보유 카드, 도감, 중복 분해 | 구현됨 |
+| 꾸미기 상점, 프로필 공개 설정, 선택형 색상 역할 12종 | 구현됨 |
+| 일일 제한이 있는 호감도 포인트 | 구현됨 (캐릭터 대화 없음) |
+| 보상을 제공하는 더미 미니게임 5종 | 구현됨 |
+| Collector의 허용 채널 메시지·음성 활동 집계 | 구현됨 (자격 조건을 보수적으로 적용) |
+| 56일 시즌, 20단계 패스, 미수령 보상 자동 정산 | 구현됨 |
+| 더미 이벤트 3종과 서버 협동 목표 | 구현됨 |
+| Polly 비공개 신고, 접수 상태, 운영진 처리, 속도 제한 | 구현됨 |
+| 명시적 동의 기반 암호화 개인 일지, 본인 데이터 내보내기·계정 익명화 | 구현됨 |
+| 스토리·대화 선택지·AI 대화 | **v1 범위에서 제외** |
+| 카드 간 거래 | **추후 구현 예정** |
+| 정식 일러스트·음악·캐릭터 설정 | **더미 콘텐츠** |
+| 실제 서비스 환경 배포 및 디스코드 3계정 연동 검증 | **아직 검증되지 않음** |
 
-The game day begins at **05:00 Asia/Seoul**, Monday for game weeks. Attendance +40 MOHAE, daily quest +60, four rewarded minigames +40 and chat/voice activities +10 give the normal maximum **150 MOHAE per day**, plus weekly/event rewards. One draw costs 150 MOHAE, ten draw costs 1,500, or free tickets. Gacha uses 1/2/3 star base chances of 83/15/2%, a maximum 60-pull 3-star guarantee and maximum 70-pull limited pickup guarantee.
+게임 날짜는 **한국 시간 오전 5시**에 바뀌고 게임 주간은 **월요일 오전 5시**부터 시작합니다. 일반적인 일일 최대 보상은 출석 40 + 일퀘 60 + 미니게임 40 + 채팅·음성 합산 10 = **150 MOHAE**입니다. 주간 퀘스트와 이벤트 보상은 별도로 받을 수 있습니다. 뽑기 비용은 1회 150 MOHAE, 10회 1,500 MOHAE입니다. 기본 희귀도 확률은 1/2/3성 각각 83/15/2%이며, 3성은 최대 60회, 한정 픽업은 최대 70회 내에 보장됩니다.
 
-## Structure
+## 저장소 디렉터리
 
 ~~~text
 apps/
-  api.ts         # game-api, only database writer
-  mohae.ts       # MOHAE Discord application commands
-  collector.ts   # independent Collector Discord app
-  polly.ts       # independent Polly Discord app
+  api.ts               # DB를 단독으로 관리하는 게임 API
+  mohae.ts             # MOHAE 봇의 디스코드 슬래시 명령어
+  collector.ts         # 독립 Collector 봇
+  polly.ts             # 독립 Polly 신고 봇
 src/
-  store.ts       # SQLite schema and transactions
-  game.ts        # economy, inventory, quest, season domain services
-  gacha.ts       # cryptographically random pity engine
-  catalog.ts     # dummy persons and content IDs
-  time.ts        # KST day/week and season math
-  client.ts      # internal service client
-  secrets.ts     # file-mounted secrets and allowed guild
-  roles.ts       # safe 12-role palette validation
+  store.ts             # SQLite 스키마와 트랜잭션
+  game.ts              # 경제, 카드, 퀘스트, 시즌 처리
+  gacha.ts             # 암호학적 난수를 이용한 뽑기 엔진
+  catalog.ts           # 더미 캐릭터와 콘텐츠 목록
+  time.ts              # 한국 시간 일자·주간·시즌 계산
+  client.ts            # 내부 서비스 API 클라이언트
+  secrets.ts           # 파일형 비밀키 및 허용 서버 검증
+  roles.ts             # 12색 역할 설정 검증
 tests/
-  game.test.ts   # economic invariants and behavior
-  api.test.ts    # local API authorization and request replay
-  discord-contract.test.ts # slash-command contracts
+  game.test.ts         # 게임 경제 및 기능 회귀 테스트
+  api.test.ts          # 내부 API 인증과 중복 요청 검사
+  discord-contract.test.ts # 디스코드 명령어 계약 검사
 deploy/
-  init-secrets.sh
-  backup.sh
-  restore.sh
-README_USER.md
+  init-secrets.sh      # 비밀키 초기화
+  backup.sh            # 데이터 백업
+  restore.sh           # 수동 데이터 복원
+README_USER.md         # 한국어 일반 사용자 안내서
 compose.yaml
 Dockerfile
 .gitlab-ci.yml
 docs/
-  architecture.md
-  game-rules.md
-  operations.md
+  architecture.md      # 구조 설명
+  game-rules.md        # 게임 규칙
+  operations.md        # 운영 점검과 복구 절차
 ~~~
 
-## Development and verification
+## 개발 및 검증
 
-Run bun install then bun run check locally. The optional GitHub Actions workflow .github/workflows/mohae-ci.yml runs typecheck, Bun tests, four builds, Compose configuration and a Docker image build on configured GitHub mirror branches. A GitLab CI dispatch status is NOT proof these jobs ran; verify exact GitHub run + checkout SHA. The API test launches a real local game-api process with **fake credentials**.
+로컬에서 의존성을 설치하고 프로젝트 점검 명령을 실행할 수 있습니다.
 
-**Do not mistake a green CI pipeline for full operational readiness:** the Docker containers have not been booted in a live target host, the three Discord bot tokens have not been supplied and the Discord Gateway and live slash commands have not yet been tested. A backup restore rehearsal, security review and production privacy policy are necessary before real users.
+~~~bash
+bun install
+bun run check
+~~~
 
-For players: [English Player Guide](README_USER.md). More technical detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
+선택적으로 사용하는 `.github/workflows/mohae-ci.yml`의 GitHub Actions 워크플로는 구성된 미러 브랜치에서 TypeScript 타입 검사, Bun 테스트, 진입점 4개 빌드, Compose 설정 검사와 Docker 이미지 빌드를 실행하도록 정의되어 있습니다. **GitLab의 외부 실행 요청(브리지)이 성공했다고 실제 GitHub 테스트까지 통과했다는 뜻은 아닙니다.** 반드시 동일 커밋 SHA를 체크아웃한 작업의 결과와 로그를 별도로 확인해야 합니다. API 테스트는 실제 운영 비밀키가 아닌 가짜 인증 정보를 사용해 로컬 게임 API를 실행합니다.
 
+**현재 이 코드베이스의 실제 운영 준비 상태는 검증 완료가 아닙니다.** 실제 서비스 호스트에서 Docker 전체를 구동한 결과, 세 디스코드 토큰의 로그인, Gateway 연결, 실제 슬래시 명령어, 백업 복원 및 운영 환경의 개인정보 정책을 추가로 확인해야 합니다. CI의 녹색 표시를 실서비스 준비 완료로 해석하지 마세요.
 
-## User-facing commands
+관련 문서: [일반 사용자 안내서](README_USER.md) · [시스템 구조](docs/architecture.md) · [게임 규칙](docs/game-rules.md) · [운영 안내서](docs/operations.md)
 
-MOHAE offers economy and collection management, a season pass, events and cooperation, opt-in private journals, JSON data export, profile visibility, 1-star/2-star automatic duplicate dismantling, and optional color roles. Polly provides private reporting, receipt status, and restricted moderator workflows. **Command names remain Korean in Discord**. Consult the [English Player Guide](README_USER.md) for their exact spelling and usage. Replies are ephemeral except for an optional receipt-only notification in a protected moderator channel. See [Operations](docs/operations.md) for the verification checklist.
+## 일반 사용자용 명령어
+
+MOHAE는 출석·게임 재화·캐릭터 수집, 시즌 패스, 이벤트·협동, 암호화 개인 일지, JSON 데이터 내보내기, 공개 프로필, 1/2성 중복 카드 자동분해 및 선택형 색상 역할을 지원합니다. Polly는 `/신고`, `/신고상태` 및 운영진 전용 `/신고목록`, `/신고처리`를 제공합니다.
+
+**모든 슬래시 명령어는 실제 디스코드에 등록된 한글 이름을 사용해야 합니다.** 사용 방법과 옵션은 [한국어 사용자 안내서](README_USER.md)를 참조하세요. 일반 응답은 비공개로 제공되지만, Polly는 별도로 보호된 운영진 채널에 **신고 접수번호만** 알릴 수 있습니다.
+
+검증용 명령어 전체 목록은 [운영 안내서](docs/operations.md)에 있습니다.

@@ -1,293 +1,264 @@
-# MOHAE — Discord Player Guide
+# MOHAE — 디스코드 사용자 가이드
 
-> **New to MOHAE? Start here.** This guide explains how an ordinary Discord server member can play the game. You do **not** need to install software, create your own bot, or manage API keys. For hosting and development, use the [Developer README](README.md).
+> **처음 하는 분을 위한 안내서.** 이 문서는 디스코드 서버에서 MOHAE를 플레이하는 **일반 사용자**를 위한 설명서입니다. 개발·설치 방법은 [개발자용 README](README.md)에서 확인하세요.
 >
-> **Current status:** Version 1 uses **placeholder characters, minigames, cosmetics, and season content**. A live deployment with all three Discord bots has **not yet been verified**. If the commands are unavailable on your server, ask its moderators.
+> **현재 상태:** MOHAE v1의 캐릭터·미니게임·시즌 보상에는 **더미 콘텐츠**가 사용됩니다. 이 저장소의 실제 디스코드 서버 배포와 세 봇의 실사용 검증은 아직 확인되지 않았으므로, 명령어가 보이지 않으면 서버 운영진에게 문의하세요.
 
-**Language note:** This guide is written in English, but the **actual Discord slash-command names and option labels are Korean**. They are shown exactly as you must enter or select them. English alternatives such as `/attendance` do not exist in this version.
+## 목차
 
-## Table of contents
+1. [처음 시작하기](#처음-시작하기)
+2. [매일 이렇게 플레이하세요](#매일-이렇게-플레이하세요)
+3. [보상과 재화](#보상과-재화)
+4. [캐릭터 뽑기와 카드 관리](#캐릭터-뽑기와-카드-관리)
+5. [미니게임·호감도·상점](#미니게임호감도상점)
+6. [시즌·이벤트·협동](#시즌이벤트협동)
+7. [개인정보·일지·데이터 관리](#개인정보일지데이터-관리)
+8. [Polly에게 신고하기](#polly에게-신고하기)
+9. [명령어 빠른 참조](#명령어-빠른-참조)
+10. [자주 묻는 질문](#자주-묻는-질문)
 
-1. [Getting started](#getting-started)
-2. [Your daily routine](#your-daily-routine)
-3. [Currencies and rewards](#currencies-and-rewards)
-4. [Drawing characters and managing cards](#drawing-characters-and-managing-cards)
-5. [Minigames, affinity, and cosmetics](#minigames-affinity-and-cosmetics)
-6. [Seasons, events, and cooperative goals](#seasons-events-and-cooperative-goals)
-7. [Privacy, journals, and account data](#privacy-journals-and-account-data)
-8. [Reporting a problem with Polly](#reporting-a-problem-with-polly)
-9. [Complete command reference](#complete-command-reference)
-10. [Frequently asked questions](#frequently-asked-questions)
+## 처음 시작하기
 
-## Getting started
+MOHAE는 **서버에 미리 초대된 봇을 사용**하는 게임이에요. 개인 PC에 프로그램을 설치하거나 봇 토큰을 만들 필요는 없습니다.
 
-MOHAE is a game played through bots **already installed on a Discord server**. Three independent bots have separate jobs:
+서버에서는 세 봇이 역할을 나눠 담당합니다.
 
-| Bot | What it does | What you do |
+| 봇 | 하는 일 | 일반 이용자가 하는 것 |
 |---|---|---|
-| **MOHAE** | Attendance, quests, draws, cards, seasons, and shop | Use its slash commands in a text channel |
-| **Collector** | Tracks eligible text and voice activity in designated channels | Chat or join eligible voice channels; no command required |
-| **Polly** | Accepts private reports and lets you check their status | Use `/신고` when you need to report someone |
+| **MOHAE** | 출석·퀘스트·뽑기·카드·시즌·상점 | 채팅창에서 **슬래시 명령어** 사용 |
+| **Collector** | 지정된 채널의 채팅·음성 활동 집계 | 평소처럼 채팅하고 음성 채널 참여 (별도 명령어 없음) |
+| **Polly** | 비공개 신고 접수·상태 확인 | 문제가 생기면 **/신고** 사용 |
 
-### Your first five steps
+**첫 플레이 (1분 코스)**
 
-1. Join a Discord server where the moderators have added all three bots.
-2. Open a text channel, type `/`, and select MOHAE's `/도움말` command to see the available commands.
-3. Run `/게임` or `/프로필` to check your account. The game creates a player record automatically on first use.
-4. Run `/출석` for your attendance reward, then complete `/일퀘`.
-5. Once you have enough MOHAE currency, try `/뽑기` to obtain a character. Use `/카드` to see your cards.
+1. 운영진이 MOHAE·Collector·Polly 봇을 설치한 디스코드 서버에 들어갑니다.
+2. 서버 텍스트 채널에서 채팅 입력창에 `/도움말`을 입력하고 **MOHAE** 명령어 목록을 확인합니다.
+3. `/게임` 또는 `/프로필`을 사용해 자신의 게임 상태를 확인합니다. 최초 사용 시 플레이어 계정이 자동 생성됩니다.
+4. `/출석`을 눌러 첫 보상을 받고, `/일퀘`를 완료합니다.
+5. 재화가 충분해지면 `/뽑기`로 캐릭터를 모아 보세요. 결과는 `/카드`에서 확인할 수 있습니다.
 
-**How slash commands work:** Type `/`, select a command under the correct bot, fill in Discord's option fields, and submit. Game replies and Polly report receipts are designed to be **ephemeral**: visible only to the person who used the command.
+> **명령어 사용법:** 채팅 입력창에 `/`를 입력 → MOHAE 또는 Polly의 명령어 선택 → 화면에 표시된 옵션 입력 → 실행. 개인 게임 정보와 신고 결과는 기본적으로 **명령어를 실행한 본인에게만 보이는 응답**으로 제공되도록 구현되어 있습니다.
 
-## Your daily routine
+## 매일 이렇게 플레이하세요
 
-The game day resets every day at **5:00 AM Korea Standard Time (Asia/Seoul)**, not at midnight. Regular activities can award up to **150 MOHAE per game day**, before any weekly or special-event rewards.
+매일 오전 **5시(한국 시간)**에 게임 날짜가 바뀝니다. 일반적인 일일 보상의 합계는 최대 **150 MOHAE**입니다.
 
-| Activity | How to do it | Normal daily reward |
+| 할 일 | 사용 방법 | 하루 기본 보상 |
+|---|---|---:|
+| 출석 | `/출석` | **40 MOHAE + 20 XP** |
+| 일일 퀘스트 | `/일퀘`에서 주제 선택 | **60 MOHAE + 40 XP** (활성 시즌에서는 시즌 XP 80 추가) |
+| 미니게임 | `/미니게임` 후 버튼 선택, 보상은 하루 4회까지 | **10 MOHAE + 10 XP × 4 = 40 MOHAE** |
+| 채팅·음성 활동 | 운영진이 허용한 채널에서 활동 | **합산 최대 10 MOHAE** |
+| **합계** | 출석 + 일퀘 + 미니게임 4회 + 활동 | **최대 150 MOHAE/일** |
+
+- **일퀘 주제:** 칭찬, 좋은 하루, 감사, 스스로 위로, 휴식 중 하나를 고릅니다. 글을 반드시 써야 하는 것은 아니에요. 글을 기록하고 싶다면 선택 사항인 `기록`에 내용을 입력하고, **`저장: 참`을 직접 선택**하세요. 기본값은 저장 안 함입니다.
+- **채팅:** 운영진이 허용한 채널에서 **60초 이상 간격으로 인정된 메시지 5개마다 5 MOHAE**를 받습니다. 단순히 빠르게 연속 메시지를 보내는 것은 인정되지 않습니다.
+- **음성:** 허용된 AFK가 아닌 음성 채널에 **봇이 아닌 사람 2명 이상**이 함께 있어야 집계됩니다. 인정된 시간 **20분**이 쌓이면 최대 10 MOHAE를 받습니다. 접속·이동 직후의 일부 시간은 집계되지 않을 수 있습니다.
+- **주의:** 채팅 보상과 음성 보상은 **합산 하루 최대 10 MOHAE**이지, 각각 10씩 받는 것이 아닙니다. Collector는 메시지의 **내용 대신 활동 이벤트를 집계**하도록 설계되었습니다.
+
+### 주간 퀘스트
+
+`/주간퀘`로 진행 상황을 확인합니다. 아래 **5가지 목표 중 서로 다른 3개를 달성**해야 주간 보상을 받을 수 있어요.
+
+| 주간 목표 | 달성 기준 |
+|---|---|
+| 일퀘 3일 | 서로 다른 날짜 3일 완료 |
+| 일퀘 5일 | 서로 다른 날짜 5일 완료 |
+| 인정된 채팅 | 15개 |
+| 인정된 음성 활동 | 누적 45분 |
+| 보상 지급 미니게임 | 8회 |
+
+주간 보상은 **300 MOHAE + 200 XP + 시즌 XP 300(활성 시즌 중)**입니다. 조건을 충족한 뒤 `/주간퀘`에서 **`수령: 참`**을 선택하세요. 주간 기준도 **월요일 오전 5시(한국 시간)**에 바뀝니다.
+
+## 보상과 재화
+
+| 이름 | 용도 | 주요 획득처 |
 |---|---|---|
-| Attendance | `/출석` | **40 MOHAE + 20 XP** |
-| Daily reflection quest | `/일퀘`, then choose a topic | **60 MOHAE + 40 XP**; an additional **80 season XP** during an active season |
-| Minigames | `/미니게임`, then choose an answer button | **10 MOHAE + 10 XP per rewarded game**, up to 4 games (**40 MOHAE**) |
-| Eligible text and voice activity | Participate in channels configured by moderators | **10 MOHAE total** across both activities |
-| **Daily total** | Complete all of the above | **Up to 150 MOHAE** |
+| **MOHAE** | 캐릭터 뽑기 | 출석, 일퀘, 미니게임, 활동, 주간 보상, 이벤트 |
+| **SHARD (조각)** | 꾸미기 상점 구매 | 중복 카드 분해, 일부 시즌 보상 |
+| **TICKET (뽑기권)** | MOHAE 대신 뽑기에 사용 | 시즌 패스 보상 |
 
-### Daily quest and optional journal
+재화·레벨·보유 카드 수는 `/프로필`에서 확인합니다. 매일 기본 활동 보상과 별개로 **주간·이벤트 보상이 추가**될 수 있어요.
 
-With `/일퀘`, choose one of five topics:
+## 캐릭터 뽑기와 카드 관리
 
-- Compliment (`praise`)
-- A good day (`good_day`)
-- Gratitude (`thanks`)
-- Self-comfort (`self_comfort`)
-- Rest (`rest`)
+### 뽑는 방법
 
-Writing an entry is **optional**. If you do want to keep a personal entry, fill in the `기록` text field and explicitly select **`저장: true`**. Entries are **not saved by default**. Saved journals are encrypted at rest, and you can read or delete your own entries later.
+1. `/프로필`에서 MOHAE 잔액과 뽑기권을 확인합니다.
+2. `/뽑기`에서 **배너: 상시 또는 한정**, **횟수: 1 또는 10**을 고릅니다.
+3. 결과를 받은 뒤 `/카드`, `/도감`, `/뽑기기록`을 확인합니다.
 
-### Automatic activity rewards from Collector
+**가격:** 1회는 150 MOHAE, 10회는 1,500 MOHAE입니다. 뽑기권이 있으면 **뽑기권부터 사용**하고 부족한 횟수에만 MOHAE가 사용됩니다. 한정 배너는 **서버에서 시즌이 활성화된 때**에만 뽑을 수 있습니다.
 
-**Text messages:** In approved channels, every **five qualifying messages**, spaced at least **60 seconds apart**, award **5 MOHAE**, subject to the shared activity cap. Sending five messages in quick succession does not qualify.
-
-**Voice:** The channel must be approved, must not be an AFK channel, and must contain **at least two non-bot users**. Once you accumulate **20 minutes of eligible voice time**, you may earn up to **10 MOHAE**. A connection change or recent channel join may prevent some time from counting.
-
-**Important:** Text and voice rewards **share one daily cap of 10 MOHAE**. You cannot get 10 from each. Collector processes activity events without storing message bodies or recording voice audio.
-
-### Weekly quests
-
-Run `/주간퀘` to see your progress. Complete **any three of the following five distinct goals**:
-
-| Goal | Requirement |
+| 뽑기 확률·보장 | 규칙 |
 |---|---|
-| Daily quest: three days | Finish a daily quest on 3 separate days |
-| Daily quest: five days | Finish a daily quest on 5 separate days |
-| Qualifying chat messages | Reach 15 messages |
-| Eligible voice time | Reach 45 minutes |
-| Rewarded minigame completions | Finish 8 rewarded minigames |
+| 기본 확률 | 1성 83% / 2성 15% / 3성 2% |
+| 2성 이상 보장 | 최대 10번째 뽑기 |
+| 3성 보장 | 최대 60번째 뽑기 |
+| 3성 확률 상승 | 41번째부터 상승 |
+| 한정 픽업 보장 | 최대 70번째 한정 뽑기 |
+| 한정 픽업 50:50 | 3성 픽업을 놓치면 다음 한정 3성은 픽업 보장 |
 
-The weekly reward is **300 MOHAE + 200 permanent XP + 300 season XP** when a season is active. Once eligible, run `/주간퀘` with **`수령: true`** to claim it. A new game week starts **Monday at 5:00 AM KST**.
+`/천장`에서 현재 카운트를 확인할 수 있습니다. 상시·한정 뽑기는 별도의 천장 상태를 사용합니다. 캐릭터는 현재 **person1~person27이라는 더미 이름**으로 제공됩니다.
 
-## Currencies and rewards
+### 뽑은 카드 활용하기
 
-| Currency | What it is used for | Where it comes from |
-|---|---|---|
-| **MOHAE** | Character draws | Attendance, quests, minigames, eligible activity, weekly rewards, events |
-| **SHARD** | Cosmetics in the shop | Dismantling duplicate cards and some season rewards |
-| **TICKET** | Character draws without spending MOHAE | Season pass rewards |
-
-Use `/프로필` to check your balances, level, and collection counts. Weekly and event rewards can be earned **in addition to** the regular daily maximum.
-
-## Drawing characters and managing cards
-
-### How to draw
-
-1. Check your MOHAE balance and tickets with `/프로필`.
-2. Run `/뽑기`, select the banner (`상시` = standard or `한정` = limited), and choose `횟수` (1 or 10 draws).
-3. Review the results with `/카드`, `/도감`, or `/뽑기기록`.
-
-**Cost:** One draw costs **150 MOHAE**; ten cost **1,500 MOHAE**. Tickets are used **before** MOHAE, so you only pay currency for draws not covered by tickets. The limited banner is only available when a server season is active.
-
-| Gacha rule | Details |
+| 명령어 | 무엇을 하나요? |
 |---|---|
-| Base rarity rates | 1-star **83%**, 2-star **15%**, 3-star **2%** |
-| 2-star or higher | Guaranteed by the **10th** draw |
-| 3-star | Guaranteed by the **60th** draw |
-| Soft pity | 3-star probability starts rising from draw **41** |
-| Limited featured character | Guaranteed within **70 limited draws** |
-| Limited 50/50 | If you miss the featured 3-star, your next limited 3-star is guaranteed to be featured |
+| `/카드` | 내가 가진 최근 카드와 고유 **카드 ID** 조회 |
+| `/도감` | 지금까지 얻은 캐릭터 종류 확인 |
+| `/뽑기기록` | 최근 20건의 뽑기 기록 확인 |
+| `/대표 캐릭터:person1` | 가진 캐릭터를 대표로 설정 (예시) |
+| `/카드잠금 카드id:<ID> 잠금:참` | 특정 카드를 잠금 |
+| `/분해 카드id:<ID> 확인:참` | 잠기지 않은 중복 카드를 소모해 조각 획득 |
+| `/자동분해설정` | 현재 자동분해 상태 확인 |
+| `/자동분해 등급:1 사용:참` | 1성 중복 카드 자동분해 활성화 (2성도 가능) |
 
-Use `/천장` to inspect the counters. Standard and limited banners maintain separate pity state. All 27 characters currently have **placeholder names** (`person1` through `person27`).
+카드 ID는 **캐릭터 이름과 다른 고유 ID**이므로 `/카드`에 표시된 값을 복사하세요. **마지막 한 장은 분해할 수 없고**, 잠긴 카드도 분해할 수 없습니다. 자동분해는 **1성·2성의 중복 카드에만** 적용됩니다. 분해 보상은 1성 1조각, 2성 5조각, 3성 40조각입니다.
 
-### Card inventory and duplicates
+## 미니게임·호감도·상점
 
-| Command | What it does |
+### 미니게임
+
+`/미니게임 게임:quiz`처럼 게임 종류를 입력하면 문제와 선택 버튼이 표시됩니다.
+
+| 입력할 게임 코드 | 종류 |
 |---|---|
-| `/카드` | Shows your recent cards and each card's unique ID |
-| `/도감` | Shows which characters you have discovered |
-| `/뽑기기록` | Shows your 20 most recent draw records |
-| `/대표 캐릭터:person1` | Sets a character you own as your representative (example) |
-| `/카드잠금 카드id:<ID> 잠금:true` | Locks a card to protect it |
-| `/분해 카드id:<ID> 확인:true` | Dismantles an unlocked duplicate card |
-| `/자동분해설정` | Shows your automatic-dismantle settings |
-| `/자동분해 등급:1 사용:true` | Automatically dismantles eligible duplicate 1-star cards (2-star also supported) |
+| `deduction` | 추리 |
+| `memory` | 기억 |
+| `treasure` | 보물 찾기 |
+| `quiz` | 퀴즈 |
+| `dice` | 주사위 |
 
-A **card ID is not the same as a character name**. Copy the unique ID from `/카드`. You **cannot dismantle your last copy** of a character or a locked card. Automatic dismantling only applies to **duplicate 1-star and 2-star cards**, never 3-star cards.
+문제를 시작한 뒤 **10분 안에** 선택하세요. 시작 후 **2초가 지나기 전에** 버튼을 누르면 너무 빠른 응답으로 거절될 수 있습니다. 정상 완료했다면 **정답·오답 관계없이** 하루 최대 4회까지 10 MOHAE와 10 XP를 받습니다. 열어 둔 미완료 게임이 3개가 되면 추가로 시작할 수 없습니다.
 
-Dismantling yields **1 SHARD** for a 1-star, **5 SHARD** for a 2-star, and **40 SHARD** for a 3-star card.
+### 호감도
 
-## Minigames, affinity, and cosmetics
+먼저 `/대표 캐릭터:person1`처럼 보유 캐릭터를 대표로 정하세요. 이후 `/호감도 행동:talk`(대화) 또는 `/호감도 행동:gift`(선물)를 사용합니다. 각각 **하루 첫 1회에 10 호감도 포인트**가 누적됩니다. 아직 캐릭터 스토리·AI 대화 기능은 없습니다.
 
-### Minigames
+### 상점과 꾸미기
 
-Use `/미니게임` with a game code such as `quiz`. The bot sends a question and answer buttons.
+`/상점`에서 상품 목록을 보고 **상품 코드(SKU)**를 확인하세요. `/구매 상품:shop_expression`으로 구매한 뒤, `/꾸미기 상품:shop_expression`으로 착용할 수 있습니다. 꾸미기 상품은 SHARD를 사용합니다. 시즌 보상처럼 상점에서 직접 판매하지 않는 상품도 있습니다.
 
-| Game code | Type |
+## 시즌·이벤트·협동
+
+### 시즌 패스
+
+운영진이 시즌을 활성화하면 `/시즌`에서 진행 상황을 확인할 수 있습니다.
+
+- 시즌 기간: **56일**, 운영진이 정한 월요일 **오전 5시** 시작
+- 시즌 패스: **20단계**, 단계마다 시즌 XP **250** 필요 (20단계 총 5,000 XP)
+- 보상: 뽑기권 총 10장, 조각 총 100개, 더미 꾸미기 및 시즌 캐릭터 등의 보상
+- 단계 달성 후: `/시즌보상 단계:3`처럼 원하는 단계를 수령 (예시)
+- 시즌 종료 후: 달성했지만 수령하지 않은 단계는 자동 정산하도록 구현되어 있습니다.
+
+시즌이 시작되지 않았다면 `/시즌`은 비활성으로 보일 수 있고, 한정 뽑기도 사용할 수 없습니다.
+
+### 이벤트
+
+`/이벤트`에서 활성화 상태와 진행 상황을 봅니다. 운영진이 **2주차·4주차·6주차** 이벤트를 열면 조건을 달성한 뒤 `/이벤트보상 이벤트:dummy_event_04`처럼 보상을 청구합니다. 이벤트 보상은 각각 **200 MOHAE**이며, 자동 활성화되지는 않습니다.
+
+### 서버 협동 목표
+
+`/협동`에서 서버의 공동 목표와 내 기여도를 확인하고, `/협동참여`로 기여합니다. 한 사람당 **하루 최대 3회** 기여할 수 있습니다. 목표가 달성되면 **기여에 참여한 사용자만** `/협동보상`으로 더미 협동 배지를 받을 수 있습니다. 서버 운영진이 협동 목표를 먼저 열어야 합니다.
+
+## 개인정보·일지·데이터 관리
+
+| 명령어 | 설명 |
 |---|---|
-| `deduction` | Number/deduction puzzle |
-| `memory` | Memory challenge |
-| `treasure` | Treasure choice |
-| `quiz` | General quiz |
-| `dice` | Dice interaction |
+| `/프로필` | 내 정보 확인 |
+| `/공개설정 공개:참` | 다른 사람이 내 **일부 공개 프로필**을 볼 수 있도록 허용 |
+| `/공개설정 공개:거짓` | 다른 사람에게 프로필 비공개 (기본 설정) |
+| `/다른프로필 대상:@사용자` | 공개에 동의한 사람의 프로필만 조회 |
+| `/일지` 또는 `/일지 날짜:YYYY-MM-DD` | 저장한 내 일지 조회 |
+| `/일지삭제 확인:참` | 오늘 일지 삭제 (날짜 지정도 가능) |
+| `/내보내기` | 내 계정 데이터와 저장 일지·내 신고 내역을 **JSON 파일**로 받기 |
+| `/계정삭제 확인:DELETE` | 계정을 익명화하고 저장 일지·공개 설정을 제거 (되돌릴 수 없음) |
 
-Select an answer **within 10 minutes** of starting. An answer submitted **less than two seconds** after starting can be rejected. A valid completed session can grant **10 MOHAE and 10 XP**, up to **four rewarded sessions per day**, **regardless of whether the answer is correct**. Abandoned sessions give no reward. You cannot keep more than three unfinished active games open.
+**일지는 기본적으로 저장되지 않습니다.** `/일퀘`에서 기록 텍스트를 입력하고 **저장: 참**을 선택해야 일지가 암호화되어 저장됩니다. `/내보내기`로 받은 JSON 파일에는 내 개인 정보가 **읽을 수 있는 형태로 들어가므로** 다른 사람에게 공유하지 마세요.
 
-### Affinity
+**계정삭제의 의미:** 이 기능은 사용자 식별자를 익명화하고 일지 및 공개 설정을 제거합니다. **모든 게임·운영 기록을 물리적으로 완전 삭제한다는 뜻은 아닙니다.** 필요한 개인정보 처리·보관 정책은 운영진에게 별도로 확인하세요.
 
-First choose a character you own with `/대표`, for example `/대표 캐릭터:person1`. Then use `/호감도 행동:talk` to talk or `/호감도 행동:gift` to give a gift. The first use of **each action per game day** grants **10 affinity points** to your representative character. Character stories, dialogues, and AI chat are **not implemented**.
+## Polly에게 신고하기
 
-### Shop and cosmetic items
+다른 사용자로부터 괴롭힘, 도배, 사기 의심 등의 피해가 발생했다면 **Polly 봇**의 명령어를 사용하세요.
 
-Run `/상점` to view items and their **SKU codes**. Buy an item with `/구매 상품:shop_expression` and equip it with `/꾸미기 상품:shop_expression`. Shop cosmetics use **SHARD**. Some rewards are season-only and cannot be bought directly.
+1. `/신고`를 선택합니다.
+2. **대상:** 신고할 사람, **사유:** 괴롭힘·도배·사기 의심·기타 중 하나, **설명:** 5~1,500자를 입력합니다.
+3. 접수가 완료되면 표시되는 **접수번호**를 복사하여 보관합니다.
+4. 나중에 `/신고상태 번호:<접수번호>`로 **내가 제출한 신고**의 상태를 확인합니다.
 
-## Seasons, events, and cooperative goals
+- 신고 접수는 **5분 동안 최대 3건**입니다. 스팸성 반복 신고는 제한될 수 있습니다.
+- 신고 결과 메시지는 본인에게만 표시되도록 구현되어 있습니다. **신고 내용은 담당 운영진이 처리할 수 있도록 저장·조회**되며, 완전한 익명 신고는 아닙니다.
+- 다른 사용자가 낸 신고를 본인 명령어로 조회할 수는 없습니다.
+- `/신고목록`, `/신고처리`는 **서버 관리 권한이 있는 운영진만** 사용할 수 있습니다. 신고 처리 결과는 운영진의 결정에 따릅니다.
+- 실제 서비스의 자료 보존·처리 기준은 서버의 신고/개인정보 정책을 확인하세요.
 
-### Season pass
+## 명령어 빠른 참조
 
-When your server's moderators enable a season, use `/시즌` to see your progress.
+### 일반 사용자 — MOHAE
 
-- **Duration:** 56 days, starting on a moderator-scheduled **Monday at 5:00 AM KST**.
-- **Progression:** 20 tiers, each requiring **250 season XP** (5,000 total XP for tier 20).
-- **Rewards:** 10 draw tickets in total, 100 SHARD, placeholder cosmetics, and a season character.
-- **Claiming:** Once you unlock a tier, use `/시즌보상 단계:3` to claim tier 3 (example).
-- **End of season:** The game is designed to automatically grant unlocked, unclaimed tier rewards when a season expires.
-
-If `/시즌` shows no active season, limited draws and some event or cooperative features may be unavailable.
-
-### Seasonal events
-
-Use `/이벤트` to view available events and progress. Moderators can enable placeholder events scheduled for **weeks 2, 4, and 6**. After meeting the event conditions, claim with a command such as `/이벤트보상 이벤트:dummy_event_04`. Each event awards **200 MOHAE**. Events do **not** start automatically; moderators must enable them.
-
-### Server-wide cooperative goals
-
-Use `/협동` to see the shared target and your contribution. Participate with `/협동참여`, up to **three contributions per person per day**. Once the server reaches its goal, **users who participated** can claim a placeholder cooperative badge with `/협동보상`. The server's moderators must first enable the cooperative challenge.
-
-## Privacy, journals, and account data
-
-Your profile is **private by default**. You control whether other players can see a limited public profile.
-
-| Command | Explanation |
+| 분류 | 명령어 |
 |---|---|
-| `/프로필` | View your own account |
-| `/공개설정 공개:true` | Allow others to view your limited public profile |
-| `/공개설정 공개:false` | Make your profile private again |
-| `/다른프로필 대상:@user` | View someone else's profile **only if they opted in** |
-| `/일지` or `/일지 날짜:YYYY-MM-DD` | Read your saved journal entry |
-| `/일지삭제 확인:true` | Delete today's journal (or specify a date) |
-| `/내보내기` | Download a **JSON file** containing your account data, saved journals, and reports you submitted |
-| `/계정삭제 확인:DELETE` | Anonymize your account and remove journal and public-profile settings; **not reversible** |
+| 시작·내 정보 | `/게임`, `/프로필`, `/도움말` |
+| 매일 할 일 | `/출석`, `/일퀘`, `/주간퀘`, `/미니게임` |
+| 뽑기 | `/뽑기`, `/뽑기기록`, `/천장` |
+| 캐릭터 | `/도감`, `/카드`, `/카드잠금`, `/분해`, `/대표`, `/호감도` |
+| 자동 분해 | `/자동분해설정`, `/자동분해` |
+| 상점·꾸미기 | `/상점`, `/구매`, `/꾸미기`, `/닉네임색` |
+| 시즌·이벤트 | `/시즌`, `/시즌보상`, `/이벤트`, `/이벤트보상` |
+| 협동 | `/협동`, `/협동참여`, `/협동보상` |
+| 개인정보 | `/공개설정`, `/다른프로필`, `/일지`, `/일지삭제`, `/내보내기`, `/계정삭제` |
 
-**Journal storage is opt-in.** Enter text in `기록` and explicitly set `저장` to true when submitting `/일퀘`. Journal bodies are encrypted while stored in the database.
+`/닉네임색`은 서버에서 **미리 지정한 12개의 역할**을 설정해 둔 경우에만 사용할 수 있습니다. `/닉네임색 번호:1`부터 `번호:12`까지 선택할 수 있고, **`번호:0`은 게임 색상 역할 해제**입니다. 서버의 역할 권한 설정에 따라 실패할 수 있어요.
 
-**Protect your exported JSON file.** It may contain your private notes and report details in **readable form**. Do not post it publicly or send it to strangers.
+### 일반 사용자 — Polly
 
-**What account deletion means:** `/계정삭제` anonymizes your user identifier and removes journal entries and profile visibility settings. It does **not guarantee permanent physical deletion of every game or moderation record**. Ask server moderators about their data-retention policy.
-
-## Reporting a problem with Polly
-
-If another member is harassing you, spamming, or suspected of fraud, use **Polly**, not the MOHAE game bot.
-
-1. Run `/신고` under the **Polly** bot.
-2. Fill in `대상` (the reported user), `사유` (reason), and `설명` (5–1,500 characters). The reason choices cover **harassment, spam, suspected fraud, and other**.
-3. After submission, **save the report receipt ID** displayed in the private response.
-4. Check progress later with `/신고상태 번호:<receipt-ID>`.
-
-- You can submit **at most three reports within five minutes**.
-- Receipt and status replies are intended to be visible only to you.
-- **Reports are not anonymous to moderators.** Details are stored so authorized staff can investigate them.
-- You cannot use your own status command to view reports submitted by other users.
-- `/신고목록` and `/신고처리` are restricted to moderators with the **Manage Server** permission.
-- Check your server's moderation and privacy policy for handling and retention rules.
-
-## Complete command reference
-
-### Regular members — MOHAE
-
-| Category | Commands |
+| 명령어 | 설명 |
 |---|---|
-| Getting started and account | `/게임`, `/프로필`, `/도움말` |
-| Daily play | `/출석`, `/일퀘`, `/주간퀘`, `/미니게임` |
-| Character draws | `/뽑기`, `/뽑기기록`, `/천장` |
-| Collection | `/도감`, `/카드`, `/카드잠금`, `/분해`, `/대표`, `/호감도` |
-| Automatic dismantling | `/자동분해설정`, `/자동분해` |
-| Shop and cosmetics | `/상점`, `/구매`, `/꾸미기`, `/닉네임색` |
-| Seasons and events | `/시즌`, `/시즌보상`, `/이벤트`, `/이벤트보상` |
-| Cooperation | `/협동`, `/협동참여`, `/협동보상` |
-| Privacy and account data | `/공개설정`, `/다른프로필`, `/일지`, `/일지삭제`, `/내보내기`, `/계정삭제` |
+| `/신고` | 비공개 신고 제출 |
+| `/신고상태` | 내 신고 접수번호로 처리 상태 확인 |
 
-**Nickname colors:** `/닉네임색` works only if your server has configured **12 pre-existing color roles** and granted the bot sufficient role permissions. Use `/닉네임색 번호:1` through `번호:12` to choose a color or **`번호:0`** to remove your game color role.
+### 운영진 전용 (일반 사용자는 사용 불가)
 
-### Regular members — Polly
+`/시즌시작`, `/이벤트시작`, `/협동시작` (MOHAE), `/신고목록`, `/신고처리` (Polly).
 
-| Command | Purpose |
-|---|---|
-| `/신고` | Submit a private report |
-| `/신고상태` | Check the status of a report you submitted |
+## 자주 묻는 질문
 
-### Moderator-only commands
+**Q. 명령어가 보이지 않아요.**
 
-**MOHAE:** `/시즌시작`, `/이벤트시작`, `/협동시작`.  
-**Polly:** `/신고목록`, `/신고처리`.
+A. 봇이 설치되지 않았거나, 봇이 접속하지 않았거나, 서버가 아직 기능을 허용하지 않았을 수 있습니다. 올바른 봇의 슬래시 명령어를 선택했는지 확인하고 운영진에게 문의하세요.
 
-These commands require Discord's **Manage Server** permission.
+**Q. 오늘 출석했는데 보상이 안 나와요.**
 
-## Frequently asked questions
+A. 출석은 **게임 날짜당 1회**입니다. 날짜는 자정이 아니라 **한국 시간 오전 5시**에 바뀝니다.
 
-### I cannot see the slash commands. Why?
+**Q. `INSUFFICIENT_MOHAE`라는 오류가 떠요.**
 
-One or more bots may not have been added to the server, may be offline, or may not have permission to register commands. Select the correct bot in Discord's command menu and ask a moderator if necessary.
+A. 뽑기에 필요한 재화가 부족합니다. `/프로필`로 잔액을 확인하세요. `BANNER_INACTIVE`는 한정 시즌이 활성화되지 않은 상태입니다.
 
-### I checked in already. Why didn't I receive another reward?
+**Q. 카드를 분해할 수 없어요.**
 
-Attendance rewards are granted **once per game day**. The reset is at **5:00 AM KST**, not midnight.
+A. 잠긴 카드는 `CARD_LOCKED`, 마지막 한 장은 `LAST_COPY_PROTECTED`로 보호됩니다. 먼저 `/카드`로 ID와 보유 상태를 확인하세요.
 
-### What does `INSUFFICIENT_MOHAE` mean?
+**Q. 미니게임을 눌렀는데 보상이 없어요.**
 
-You do not have enough MOHAE to cover the draw cost. Check `/프로필`. `BANNER_INACTIVE` means the limited banner is not active.
+A. 일일 보상 가능 횟수(4회)를 이미 채웠거나, 제한 시간 10분을 넘겼거나, 너무 빠르게 선택했을 수 있습니다. 완료하지 않은 게임에는 보상이 없습니다.
 
-### Why can't I dismantle a card?
+**Q. 다른 사람의 프로필이 안 열려요.**
 
-`CARD_LOCKED` means the card is locked. `LAST_COPY_PROTECTED` means it is your only remaining copy of that character. Use `/카드` to find the correct card ID.
+A. `PROFILE_PRIVATE`는 상대방이 프로필 공개에 동의하지 않았다는 뜻입니다. 기본값은 비공개예요.
 
-### Why did a minigame give no reward?
+**Q. 신고 상태를 못 확인해요.**
 
-You may have already claimed four daily minigame rewards, waited longer than ten minutes, submitted an answer too quickly, or abandoned the game.
+A. 접수번호를 정확히 복사했는지 확인하세요. `REPORT_NOT_FOUND`는 해당 서버에서 본인이 접수한 신고가 없거나 조회할 권한이 없는 경우에도 발생합니다.
 
-### Why can't I view another person's profile?
+**Q. 스토리·AI 대화·카드 거래도 되나요?**
 
-`PROFILE_PRIVATE` means that player has not opted into sharing their public profile. Privacy is the default.
-
-### Why can't I check a report?
-
-Make sure you copied the exact report receipt ID. `REPORT_NOT_FOUND` also appears when that report is not yours or cannot be found in the current server.
-
-### Why are the command names still Korean?
-
-**Those are the actual commands registered with Discord.** This English guide translates the explanations, not the bot's command identifiers. Do not replace them with invented English aliases.
-
-### Are there character stories, AI chat, or card trading?
-
-**No, not in v1.** The current characters and season content are placeholders. These features are outside the implementation's defined scope.
+A. **현재 v1에는 없습니다.** 캐릭터 이름·콘텐츠도 더미입니다. 기능이 추가되면 이 가이드를 갱신해야 합니다.
 
 ---
 
-**For moderators and developers:** [Developer README](README.md) · [Game rules](docs/game-rules.md) · [Operations guide](docs/operations.md)
+**운영진/개발자용:** [개발자 README](README.md) · [게임 규칙](docs/game-rules.md) · [운영 가이드](docs/operations.md)
 
-_This guide describes the code in the repository. Live Discord command behavior and production readiness still require separate verification._
+_이 안내서는 현재 저장소에 반영된 구현 코드를 기준으로 작성되었습니다. 실제 서버에서 명령어의 동작 검증과 운영 준비는 별도 확인이 필요합니다._

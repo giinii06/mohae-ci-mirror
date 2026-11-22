@@ -1,37 +1,38 @@
-# MOHAE v1 release hardening (Alchemy 2.2)
+# MOHAE v1 릴리스 안정화 계획 (Alchemy 2.2)
 
-- gate_version: 2.2
-- project: blond11qq/mohae (#89258415)
-- source branch: feat/mohae-v1-three-bots
-- target: main, existing Draft MR !1
-- baseline code SHA: ffa8b3443d7f06485c50d733d45b82683d5a0fbb
-- user outcome: Three distinct Discord bot accounts operate the documented collection game, activity rewards and private moderation workflows, with safe persistent economy and repeatable deployment.
-- negative acceptance: Malformed commands reject before registration, commands cannot cross bot role, public channels cannot leak reports, double actions cannot double-credit, restarts must not lose data.
-- constraints: No merge, live deploy, GitLab runner or visibility/mirror setting changes; no real bot tokens or guild test environment provided. Stories/AI chat/card trading remain intentionally out of scope per approved v1 design.
-- CI provider: effective project ci_config_path is an external GitLab -> GitHub Actions bridge; historical feature-branch GitLab pipeline was green on baseline SHA, but new-SHA evidence must be re-resolved.
-- method: Sequential self-review, source-pinned GitLab commits and remote CI; no independent reviewer or local authenticated checkout assumed.
+- 검증 체계: `gate_version=2.2`
+- 프로젝트: `blond11qq/mohae` (#89258415)
+- 당시 작업 브랜치: `feat/mohae-v1-three-bots`
+- 병합 대상: `main`, 당시 기존 Draft MR !1
+- 초기 구현 SHA: `ffa8b3443d7f06485c50d733d45b82683d5a0fbb`
+- 사용자 목표: 서로 다른 디스코드 봇 계정 세 개가 문서화된 캐릭터 수집 게임, 활동 보상, 비공개 신고 처리 기능을 제공하고 게임 경제 데이터가 안전하게 보존되며 배포 절차가 반복 가능해야 함.
+- 실패 수용 기준: 잘못된 명령어는 등록 전에 거부, 봇의 서비스 역할을 넘는 명령어 실행 차단, 공개 채널로 신고 정보 유출 금지, 중복 실행으로 보상 중복 지급 금지, 재시작 후 데이터 유실 금지.
+- 당시 제약: 병합·실서비스 배포·GitLab 러너 변경·공개 범위/미러 변경 금지, 실제 봇 토큰과 테스트 서버 미제공. 스토리·AI 대화·카드 거래는 승인된 v1 범위에서 의도적으로 제외.
+- CI 제공자: 프로젝트의 유효한 `ci_config_path`는 GitLab → GitHub Actions 외부 브리지. 과거 초기 SHA에서는 녹색 표시가 있었지만 새로운 SHA의 실제 테스트 결과는 별도로 확인해야 함.
+- 작업 방식: GitLab 소스 SHA에 고정한 커밋, 원격 CI와 순차 자체 검토. 독립 검토자나 인증된 로컬 체크아웃 환경을 가정하지 않음.
 
-## Phases
+## 단계
 
-1. [Phase 01](phase-01-command-contract.md): Fix source-encoded command names and guard Discord registration; verify full command surface, negative validation.
-2. [Phase 02](phase-02-moderation.md): Wire all Polly reporting/status/admin commands with role checks, private replies and tests.
-3. [Phase 03](phase-03-integration.md): Regression and restart/deployment checks, security/privacy review and operator instructions.
+1. [1단계](phase-01-command-contract.md): 인코딩이 손상된 명령어를 수정하고 디스코드 등록을 보호하며, 전체 명령어와 잘못된 값 처리를 검증.
+2. [2단계](phase-02-moderation.md): Polly의 신고·상태·관리자 명령어를 권한 검사와 비공개 응답으로 연결하고 테스트 추가.
+3. [3단계](phase-03-integration.md): 회귀 테스트, 재시작·배포 확인, 보안·개인정보 검토와 운영 절차 문서화.
 
-## State (append-only events)
+## 상태 이력 (추가만 허용)
 
-- 2026-11-22: Phase 01 not_started; Phase 02 not_started; Phase 03 not_started. This plan is authored from inspected baseline source. Later states require actual SHA-specific evidence; no retroactive CI or live Discord claim.
+- 2026-11-22: 1/2/3단계 모두 `not_started`. 코드의 초기 상태를 확인한 후 계획을 작성하였으며, 추후 상태 변경에는 정확한 SHA 기준의 실증이 필요함. 과거의 CI나 실제 디스코드 검증을 소급하여 통과로 처리하지 않음.
 
-## Release gate
+## 당시 릴리스 검증 조건
 
-Human-controlled Discord test-guild smoke test with three tokens, backup+restore rehearsal, offsite encrypted backup, privacy/permission review and stable schema migration plan are required before non-draft MR or deployment. Code/test completion does not replace these external E2E requirements.
+비공개 디스코드 테스트 서버에서 세 토큰으로 수동 기능 검사, 백업·복구 리허설, 외부 암호화 백업, 개인정보·권한 점검, 안정적인 DB 스키마 마이그레이션 계획을 확인한 뒤 실서비스 배포를 검토해야 함. 코드·단위 테스트 통과가 이 실제 환경 검증을 대체하지 않음.
 
+## 2026-11-22 이어서 진행한 작업 기록 (당시 상태)
 
-## 2026-11-22 continuation checkpoint (append-only)
+- **1단계:** `not_started → in_progress → implemented`. 인코딩이 손상된 네 개의 소스 파일을 수정하고 MOHAE 슬래시 명령어/API 연결 범위를 확대. `f88e22464c0ecedc91394ef0190c05bf5764dfb9`를 기준으로 명령어 선언 38개·처리 분기 38개를 정적 확인했으며, 허용된 MOHAE API 호출이 연결되어 있고 운영 코드에 손상된 C1 문자 코드가 남아 있지 않았음.
+- **2단계:** `not_started → in_progress → implemented`. Polly 명령어 4개 등록·처리, 서버 관리 권한 확인, 비공개 응답, API 수준의 신고 소유권 검사, 접수번호만 전달하는 운영진 알림 기능 추가. 정상·오류 API 회귀 검사 코드 추가.
+- **3단계:** `not_started → in_progress → implemented`. SQLite v1 스키마 버전 검사, 롤백용 오프라인 복원, 본인 신고 이력을 포함한 비공개 데이터 내보내기, 백업 파일 무시 설정, 운영 매뉴얼, GitHub Actions 워크플로 추가.
+- 당시 **구현 코드 SHA**: `f88e22464c0ecedc91394ef0190c05bf5764dfb9`. GitLab 파이프라인 **#3098849459**는 외부 브리지 실행 요청만 성공했고 실제 테스트·빌드 작업은 **0개**였음. 하위 `ci-hub-smoke` 파이프라인 **#3098849510**은 **건너뜀**. 실제 GitHub Bun 작업과 체크아웃 SHA는 확인하지 못함. 당시 분류: `dispatch=success`, `provider_result=unknown`, `jobs_verified=false`, `e2e_verified=false`.
+- 사전 커밋 점검: 인증된 로컬 Bun 체크아웃·실행기가 없었기 때문에 해당 SHA에서 Bun 테스트·타입 검사·빌드를 **실행하거나 검증하지 못함**. 과거의 23/23 테스트 성공은 신규 코드가 아닌 `ffa8b344` 초기 SHA에 속함.
+- 리뷰: 요구사항 및 품질·보안 측면의 자체 검토를 `review.md`에 기록. 독립 리뷰 또는 실제 디스코드 테스트를 수행했다고 주장하지 않음.
+- 당시 세 단계는 모두 **구현 상태였지만 검증·완료 상태가 아니었음**. 실제 CI 작업과 테스트 서버·복원 검증이 차단 조건이었으므로 해당 시점에는 Draft MR을 유지하고 병합·배포하지 않는 결정을 기록함.
 
-- Phase 01: not_started -> in_progress -> implemented. Four source files had localized text repaired; MOHAE slash-command/API parity expanded. Static inspection pinned to f88e22464c0ecedc91394ef0190c05bf5764dfb9 finds 38 declared MOHAE command names and 38 cases, all permitted MOHAE API actions routed, and no corrupted C1 codepoints in production source.
-- Phase 02: not_started -> in_progress -> implemented. All 4 Polly commands register and dispatch; member Manage Guild checks, ephemeral replies, report ownership enforced at API level, sensitive staff notice only includes receipt ID. Added negative and success API regression assertions.
-- Phase 03: not_started -> in_progress -> implemented. SQLite v1 schema guard, offline restore with rollback, private export with own reports, ignored backup files, operational runbook and GitHub Actions workflow.
-- Current **code** SHA: f88e22464c0ecedc91394ef0190c05bf5764dfb9. Its GitLab pipeline 3098849459 is SUCCESS for bridge dispatch only and has ZERO test/build jobs; downstream ci-hub-smoke pipeline 3098849510 was SKIPPED. Actual GitHub Bun jobs and checkout SHA are UNKNOWN. Categorization: dispatch=success; provider_result=unknown; jobs_verified=false; e2e_verified=false.
-- Pre-commit: no authenticated local checkout/executor for Bun; Bun test/typecheck/build on this code SHA NOT EXECUTED/VERIFIED. Historical 23/23 tests belonged to prior baseline ffa8b344, not the candidate.
-- Review: requirements and quality/security self-review recorded in review.md. No independent review or live Discord test.
-- Phase 01/02/03 remain implemented but NOT verified or completed; further advancement blocked by real CI job evidence and a live test-guild smoke/restore test. Keep existing MR Draft, do not merge or deploy.
+> **이 문서는 이전 검증 체크포인트의 역사적 기록입니다.** 이후 MR 병합 여부와 무관하게 당시 실행되지 않은 테스트가 통과한 것으로 바뀌지는 않습니다.

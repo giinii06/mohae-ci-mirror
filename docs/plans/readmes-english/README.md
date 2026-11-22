@@ -1,31 +1,35 @@
-# Translate every MOHAE README to English — Alchemy 2.2
+# MOHAE README 전체 영어 번역 작업 이력 — Alchemy 2.2
 
-- Gate version: 2.2
-- Baseline branch/commit: `main` at `aa4c65fe49a3266f6b4b954e5eb55575bc58ba30`
-- Working branch: `docs/readmes-english-20261122`
-- Target: `main` via new merge request
-- User outcome: every README in MOHAE provides English-only explanatory prose without changing actual Discord commands or game behavior.
-- Scope (all README-like source docs): `README.md`, `README_USER.md`, `docs/plans/mohae-user-readme-merge/README.md`, `docs/plans/mohae-v1-release-hardening/README.md`.
-- Repository discovery: the two historical `docs/plans/**/README.md` files are **already in English**. Preserve their append-only historical records exactly; no translation needed. `README.md` has a Korean intro and Korean slash-command names; `README_USER.md` is Korean. Update these two.
-- Backward compatibility: keep every registered Korean slash command and Korean option name verbatim in inline code, since renaming them in prose would break the guide. Explain that commands remain Korean even though documentation prose is English.
-- Non-goals: no Discord code, config, package, CI, secret, hosting, or deployment changes. A Git merge is authorized; a production release is not.
-- Negative acceptance: no invented English slash-command aliases, broken Markdown anchors, missing command coverage or privacy claims that contradict source; no accidental changes to gameplay.
-- Source of truth: `apps/mohae.ts` (38 commands), `apps/polly.ts` (4 commands), `src/game.ts`, `src/gacha.ts`, `docs/game-rules.md`.
-- CI reality: configured GitLab external CI is a dispatch bridge; pipeline success alone does not prove Bun jobs. Docs-only validation is structural static review; actual gameplay and Discord E2E not claimed.
+> 이 문서는 **이전에 수행한 영어 번역 작업의 당시 계획과 검증 결과**를 보존하기 위한 이력입니다. 이후 사용자가 원하는 언어를 **한국어로 정정**했으므로 현재 README의 표준 언어는 한국어입니다.
 
-## Phases
+- 검증 체계: 2.2
+- 당시 기준 브랜치·커밋: `main`의 `aa4c65fe49a3266f6b4b954e5eb55575bc58ba30`
+- 당시 작업 브랜치: `docs/readmes-english-20261122`
+- 당시 병합 대상: 새로운 MR을 통해 `main`
+- 당시 사용자 요청 해석: 실제 디스코드 명령어와 게임 동작은 유지한 채 README의 자연어 설명을 영어로 통일.
+- 조사한 범위: `README.md`, `README_USER.md`, `docs/plans/mohae-user-readme-merge/README.md`, `docs/plans/mohae-v1-release-hardening/README.md`.
+- 조사 당시 결론: 기존 계획 폴더의 README 2개는 이미 영어였으므로 역사적 기록을 수정하지 않았고 루트 README와 사용자 README 2개를 영어로 변환했음.
+- 하위 호환성: 실제 디스코드에 등록된 한국어 명령어·옵션 이름을 임의로 바꾸면 사용 안내가 잘못되므로 코드 형태로 원문 보존.
+- 제외 범위: 디스코드 코드, 설정, 패키지, CI, 비밀키, 호스팅, 배포를 수정하지 않음. 코드 병합 권한과 실제 서비스 배포 권한은 구분.
+- 실패 수용 기준: 존재하지 않는 영어 명령어 별칭 생성 금지, 잘못된 Markdown 앵커와 누락된 명령어 금지, 실제 개인정보 처리와 모순된 설명 금지, 게임 동작 변경 금지.
+- 사실 확인 기준: `apps/mohae.ts`(명령어 38개), `apps/polly.ts`(4개), `src/game.ts`, `src/gacha.ts`, `docs/game-rules.md`.
+- CI 주의: GitLab 외부 CI 브리지 호출이 성공해도 실제 Bun 작업이 실행되었다고 볼 수 없음. 문서 정적 검증과 디스코드 실제 동작 검증을 분리.
 
-1. [Phase 01: translate and cross-check](phase-01-translation.md): convert root README and user README to idiomatic English; preserve all valid Korean command tokens and essential gameplay figures; check every referenced command against source.
-2. [Phase 02: review and merge](phase-02-merge.md): verify changes are documentation-only, two-lens self-review, check MR/source SHA and pipeline evidence, then merge per explicit user instruction.
+## 당시 단계
 
-## Append-only state log
+1. [1단계: 번역과 대조](phase-01-translation.md): 루트와 사용자 README를 자연스러운 영어로 바꾸고 실제 한국어 명령어·보상 수치·상대경로 확인.
+2. [2단계: 검토와 병합](phase-02-merge.md): 수정 범위가 문서에 한정되는지 비교, 요구사항 및 보안 검토, MR SHA와 실제 CI 증거 확인 후 요청된 병합 수행.
 
-- 2026-11-22: Phase 01 not_started, Phase 02 not_started. Baseline pinned as above. Previously merged MOHAE implementation remains subject to its independent unverified runtime/test gates. 
+## 상태 이력
 
-## 2026-11-22 implementation and static review checkpoint
+- 2026-11-22: 최초 기록은 1단계 `not_started`, 2단계 `not_started`. 코드의 기존 테스트·실제 운영 검증 미완료 사항을 영어 README 번역의 완료로 대체하지 않음.
 
-- Phase 01: not_started -> in_progress -> implemented; reviewed source SHA `3c37d78f3ba5b310a9a5793d182f02e0e24e4622`.
-- README discovery confirmed four README files. The two historical plan READMEs were already English and remain unmodified; root README and user README were translated.
-- Static review: root README has zero Hangul codepoints; user README has zero Hangul outside inline code (registered Discord commands, labels and values). All 38 MOHAE and 4 Polly slash commands present in English guide. All 10 table-of-contents headings resolve to known section IDs; all relative Markdown links checked.
-- Source diff: Markdown documentation-only; no application, CI, secret or dependency changes. No local Bun checks run, as the change has no executable code. This verification makes no claim about live Discord E2E.
-- Phase 02: not_started -> in_progress; MR/merge status and fresh exact-SHA CI inspection pending. User expressly authorized merge into main. `docs/plans/readmes-english/review.md` records both review lenses.
+## 2026-11-22 구현 및 정적 검토 기록
+
+- 1단계: `not_started → in_progress → implemented`. 당시 번역 결과를 검토한 SHA는 `3c37d78f3ba5b310a9a5793d182f02e0e24e4622`.
+- 당시 확인한 README는 4개였음. 두 과거 계획 README는 영어 그대로 두고, 루트 README와 사용자 README만 영어로 번역했음. 이후 이 문서가 추가되어 README 파일 개수는 달라졌음.
+- 당시 정적 검토 결과: 루트 README에 한글 글자 0개, 사용자 안내서는 실제 등록된 명령어·옵션을 표시한 코드 영역을 제외하면 한글 문장 0개. MOHAE 38개, Polly 4개 명령어를 모두 안내하고 목차 10개와 상대경로 링크를 확인함.
+- 변경 범위는 Markdown 문서에 한정되었으며 애플리케이션·CI·비밀키·의존성은 수정하지 않았음. 로컬 Bun 테스트를 실행하지 않았고 실제 디스코드 종단 간 동작을 검증했다고 주장하지 않았음.
+- 2단계: `not_started → in_progress`. 당시 기록 작성 시 MR 병합 상태와 새로운 SHA의 CI 확인은 아직 진행 중이었음. 사용자는 명시적으로 `main` 병합을 요청했으며 `docs/plans/readmes-english/review.md`에 두 관점의 검토 내용을 기록함.
+
+> 해당 영어 번역 작업은 이후 MR !2로 `main`에 병합되었으나, 사용자가 의도를 한국어로 정정하여 별도의 한국어 README 작업으로 대체되었습니다. 당시 증거와 커밋 SHA는 이력 조회를 위해 보존합니다.
