@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bash -n deploy/init-secrets.sh deploy/backup.sh
+          bash -n deploy/init-secrets.sh deploy/backup.sh deploy/restore.sh
           mkdir -p secrets
           for name in mohae_bot_token collector_bot_token polly_bot_token mohae_api_key collector_api_key polly_api_key journal_key; do
             printf placeholder > "secrets/$name"

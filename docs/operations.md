@@ -40,3 +40,11 @@ Deploy only after all commands succeed, separate users cannot view each other's 
 ## Continuous integration provider boundaries
 
 This GitLab project can report green for a bridge dispatch with no Bun test jobs. The GitHub Actions workflow at .github/workflows/mohae-ci.yml performs the checks when it is present in a GitHub mirror with the branch and Actions enabled. Independently inspect its checked-out SHA, actual jobs and output; absent a visible run mark build/test evidence UNKNOWN rather than PASSED. Do not change project CI settings or runner configuration as part of this branch.
+
+
+## Offline restore (destructive; explicit operator approval only)
+
+After verifying the archive, the operator can restore a local backup with:
+bash deploy/restore.sh --confirm backups/mohae-YYYYMMDDTHHMMSSZ.tar.gz
+
+The script rejects unknown archive members, stops the only DB writer, saves a rollback snapshot, restores the SQLite volume, and restarts game-api. Test this first on a separate staging host; never restore a production snapshot without a scheduled outage and verified offsite backup. The backup archives are local and NOT encrypted by this script; encrypt before any offsite transfer.
