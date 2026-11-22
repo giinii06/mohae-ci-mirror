@@ -24,7 +24,7 @@ if [[ "$archive_dir" != "$PWD/backups" ]]; then
   exit 1
 fi
 archive_name="$(basename "$file")"
-if [[ ! "$archive_name" =~ ^mohae-[0-9]{8}T[0-9]{6}Z[.]tar[.]gz$ ]]; then
+if [[ ! "$archive_name" =~ ^mohae-(pre-restore-)?[0-9]{8}T[0-9]{6}Z[.]tar[.]gz$ ]]; then
   echo "Unexpected backup filename" >&2
   exit 1
 fi
