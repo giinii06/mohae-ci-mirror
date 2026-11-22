@@ -21,3 +21,11 @@
 ## Append-only state log
 
 - 2026-11-22: Phase 01 not_started, Phase 02 not_started. Baseline pinned as above. Previously merged MOHAE implementation remains subject to its independent unverified runtime/test gates. 
+
+## 2026-11-22 implementation and static review checkpoint
+
+- Phase 01: not_started -> in_progress -> implemented; reviewed source SHA `3c37d78f3ba5b310a9a5793d182f02e0e24e4622`.
+- README discovery confirmed four README files. The two historical plan READMEs were already English and remain unmodified; root README and user README were translated.
+- Static review: root README has zero Hangul codepoints; user README has zero Hangul outside inline code (registered Discord commands, labels and values). All 38 MOHAE and 4 Polly slash commands present in English guide. All 10 table-of-contents headings resolve to known section IDs; all relative Markdown links checked.
+- Source diff: Markdown documentation-only; no application, CI, secret or dependency changes. No local Bun checks run, as the change has no executable code. This verification makes no claim about live Discord E2E.
+- Phase 02: not_started -> in_progress; MR/merge status and fresh exact-SHA CI inspection pending. User expressly authorized merge into main. `docs/plans/readmes-english/review.md` records both review lenses.
