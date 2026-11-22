@@ -22,4 +22,21 @@ Rotate any compromised Discord token in the Discord Developer Portal and the cor
 
 ## Release gates
 
-GitLab exact-source-SHA CI must pass both verify and compose_lint. CI tests include a local game-api with fake keys and a validated Docker Compose file. CI does NOT actually start four Docker services with real secrets, talk to Discord or prove operational reliability. Complete live test guild checks, off-site restore, privacy policy and permission audit before production rollout.
+GitHub Actions MOHAE Bun + Compose checks should run on the exact candidate Git commit and must pass typecheck, tests, four builds, Docker image build, Compose config and shell syntax. This GitLab project's effective ci_config_path is an external ci-hub bridge: a green GitLab bridge/dispatch alone does NOT prove GitHub jobs ran. Confirm the GitHub Actions run and checkout SHA separately. None of these CI checks connect to real Discord or demonstrate production reliability. Complete live test guild checks, off-site restore, privacy policy and permission audit before production rollout.
+
+
+## Slash-command smoke matrix
+
+Test MOHAE commands on a private guild:
+- Core: /게임, /프로필, /출석, /일퀘 (with optional journal save), /주간퀘, /뽑기, /뽑기기록, /천장, /도감, /카드, /카드잠금, /분해, /대표, /호감도, /미니게임, /상점, /구매, /꾸미기.
+- Privacy: /공개설정, /다른프로필, /일지, /일지삭제, /내보내기, /계정삭제; verify public-profile denial, private export and deletion confirmation.
+- Seasons and events: /시즌, /시즌보상, /이벤트, /이벤트보상, /협동, /협동참여, /협동보상. Guild managers only: /시즌시작, /이벤트시작, /협동시작.
+- Optional cosmetics: /닉네임색 with exactly 12 precreated color roles; test bot role hierarchy, removing the old palette role and no arbitrary role assignment.
+- Polly: /신고 (private reply), /신고상태 (only own receipt), /신고목록 and /신고처리 (Manage Guild only). Staff-only alert channel receives receipt ID, not report contents.
+- Collector: allowlisted text channels count spaced non-bot messages without reading content; voice counts only two continuous eligible human participants.
+
+Deploy only after all commands succeed, separate users cannot view each other's data, no sensitive public notifications occur and database/backup survive deliberate container restarts.
+
+## Continuous integration provider boundaries
+
+This GitLab project can report green for a bridge dispatch with no Bun test jobs. The GitHub Actions workflow at .github/workflows/mohae-ci.yml performs the checks when it is present in a GitHub mirror with the branch and Actions enabled. Independently inspect its checked-out SHA, actual jobs and output; absent a visible run mark build/test evidence UNKNOWN rather than PASSED. Do not change project CI settings or runner configuration as part of this branch.

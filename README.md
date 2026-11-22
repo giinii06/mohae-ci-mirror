@@ -88,8 +88,13 @@ docs/
 
 ## Development and verification
 
-Run bun install then bun run check locally, or use the GitLab CI pipeline. Every push runs typecheck, Bun tests, four Bun builds, shell syntax and a Docker Compose configuration check. The API test launches a real local game-api process with **fake credentials**.
+Run bun install then bun run check locally. The optional GitHub Actions workflow .github/workflows/mohae-ci.yml runs typecheck, Bun tests, four builds, Compose configuration and a Docker image build on configured GitHub mirror branches. A GitLab CI dispatch status is NOT proof these jobs ran; verify exact GitHub run + checkout SHA. The API test launches a real local game-api process with **fake credentials**.
 
 **Do not mistake a green CI pipeline for full operational readiness:** the Docker containers have not been booted in a live target host, the three Discord bot tokens have not been supplied and the Discord Gateway and live slash commands have not yet been tested. A backup restore rehearsal, security review and production privacy policy are necessary before real users.
 
 More detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
+
+
+## User-facing commands
+
+MOHAE includes economy/collection, season pass, event/co-op, opt-in journal, JSON export, profile visibility, 1/2-star auto-dismantle and optional twelve-role color commands. Polly separately registers private /신고, /신고상태 and staff-only /신고목록 and /신고처리. All replies are private to the caller unless the explicitly enabled, private Polly staff receipt notification fires. See docs/operations.md for a command-by-command acceptance checklist.
