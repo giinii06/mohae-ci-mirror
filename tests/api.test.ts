@@ -27,6 +27,30 @@ test('Three-service API authentication and request replay',async()=>{
   const report=await post('polly','c'.repeat(32),'report','report-id',{target:null,reason:'other',details:'a valid private report'});
   expect(report.status).toBe(200);
   expect(typeof report.data.result.reportId).toBe('string');
+
+  const reportId=report.data.result.reportId as string;
+  const status=await post('polly','c'.repeat(32),'report-status','owner-check',{reportId});
+  expect(status.status).toBe(200);
+  expect(status.data.result.status).toBe('open');
+  const unrelated=await post('polly','c'.repeat(32),'report-status','nonowner-check',{
+    reportId,userId:'345678901234567890'
+  });
+  expect(unrelated.data.error).toBe('REPORT_NOT_FOUND');
+  const staffList=await post('polly','c'.repeat(32),'report-list','staff-list');
+  expect(staffList.status).toBe(200);
+  expect(staffList.data.result.some((r:any)=>r.id===reportId)).toBe(true);
+  expect((await post('mohae','a'.repeat(32),'report-list','wrong-role')).status).toBe(403);
+  const changed=await post('polly','c'.repeat(32),'report-update','staff-update',{
+    reportId,status:'resolved'
+  });
+  expect(changed.status).toBe(200);
+  expect(changed.data.result.status).toBe('resolved');
+  const afterUpdate=await post('polly','c'.repeat(32),'report-status','check-update',{reportId});
+  expect(afterUpdate.data.result.status).toBe('resolved');
+  const invalid=await post('polly','c'.repeat(32),'report-update','staff-invalid',{
+    reportId,status:'arbitrary'
+  });
+  expect(invalid.data.error).toBe('INVALID_REPORT_STATUS');
   expect((await post('mohae','a'.repeat(32),'report','not-allowed',{reason:'other',details:'some report'})).status).toBe(403);
   const chat=await post('collector','b'.repeat(32),'chat','test-chat',{messageId:'987654321098765432'});
   expect(chat.data.result.accepted).toBe(true);
