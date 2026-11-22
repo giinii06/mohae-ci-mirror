@@ -1,93 +1,104 @@
-# MOHAE
+# MOHAE | Three-Bot Discord Collection Game
+
+> **디스코드 일반 사용자라면:** **[MOHAE 한국어 사용 설명서 / README_USER.md](README_USER.md)**를 먼저 읽으세요. 출석·일퀘·뽑기·카드·시즌·Polly 신고를 처음부터 설명합니다.
+>
+> This README documents development and hosting. For an ordinary Discord player, see **[Korean end-user guide](README_USER.md)**.
+
+MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository is a working implementation branch of the original MOHAE game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
+
+**This release contains entirely dummy content** (person1 to person27, dummy minigames, cosmetics, quests and season events). **Stories, dialogue, story options and AI chat are excluded on purpose.** Card trading was explicitly deferred to a later release in the design document and is disabled.
+
+## Architecture
+
+~~~mermaid
+flowchart TD
+  A[MOHAE Discord app] --> B[mohae-bot]
+  C[Collector Discord app] --> D[collector-bot]
+  E[Polly Discord app] --> F[polly-bot]
+  B -->|"MOHAE_API_KEY"| G[game-api]
+  D -->|"COLLECTOR_API_KEY"| G
+  F -->|"POLLY_API_KEY"| G
+  G --> H[(SQLite durable Docker volume)]
+~~~
+
+**Only game-api reads/writes the database.** All authenticated internal API keys are role-limited. Personal in-game messages are ephemeral. Collector counts messages and voice membership without storing message bodies or recording audio.
+
+## Getting started (Docker Compose)
+
+1. Create **three** Discord applications in the Developer Portal and invite all three to the same private test server. Collector must have the Gateway guild message and voice state intents. Do not grant message-content intent merely for rewards.
+2. Copy .env.example to .env and edit the guild/channel IDs. Configure a locked moderator-only report channel for Polly.
+3. Run bash deploy/init-secrets.sh. Enter the three bot tokens interactively. This script also generates the three service API keys and an AES-256-GCM journal encryption key.
+4. Run docker compose config --quiet.
+5. Run docker compose up --build -d.
+6. Run docker compose ps and docker compose logs --tail=100. Verify **four running processes and three distinct Discord bot identities**.
+7. Run a manual smoke test in the test guild, following docs/operations.md. Docker configuration validation is not proof of actual Discord connectivity.
+
+Secrets are files under secrets/, deliberately ignored by Git. Never put real bot tokens in source files, logs or .env.example. Only game-api mounts the SQLite volume. **Never use docker compose down -v** unless explicitly destroying all stored accounts, cards and balances.
+
+## Game overview
+
+| Feature | Status |
+|---|---|
+| Daily attendance and reflection quest | Implemented |
+| Weekly progress and previous-week claim | Implemented |
+| 1 / 10 draw and standard / limited pity state | Implemented |
+| 27 dummy characters, owned cards, discovery book, duplicate dismantle | Implemented |
+| Cosmetic shop, profile, privacy visibility, 12 optional color roles | Implemented |
+| Affinity points with daily limits, no dialogue | Implemented |
+| Five dummy interactive minigames with completion rewards | Implemented |
+| Message/voice activity counted by Collector only | Implemented with conservative eligibility |
+| 56-day season, 20 tiers, automatic expired-tier settlement | Implemented |
+| Three dummy events and server cooperative progress | Implemented |
+| Polly private reports, staff triage, status, rate limits | Implemented |
+| Opt-in encrypted private journal and owner data export/delete | Implemented |
+| Character stories, narrative, choices, AI chat | Explicitly excluded |
+| Card-to-card trading | Deferred (initial version) |
+| Real art/music, real character biographies | Dummy placeholders, as requested |
+| Production deployment and live three-token Discord test | Not yet verified |
+
+The game day begins at **05:00 Asia/Seoul**, Monday for game weeks. Attendance +40 MOHAE, daily quest +60, four rewarded minigames +40 and chat/voice activities +10 give the normal maximum **150 MOHAE per day**, plus weekly/event rewards. One draw costs 150 MOHAE, ten draw costs 1,500, or free tickets. Gacha uses 1/2/3 star base chances of 83/15/2%, a maximum 60-pull 3-star guarantee and maximum 70-pull limited pickup guarantee.
+
+## Structure
+
+~~~text
+apps/
+  api.ts         # game-api, only database writer
+  mohae.ts       # MOHAE Discord application commands
+  collector.ts   # independent Collector Discord app
+  polly.ts       # independent Polly Discord app
+src/
+  store.ts       # SQLite schema and transactions
+  game.ts        # economy, inventory, quest, season domain services
+  gacha.ts       # cryptographically random pity engine
+  catalog.ts     # dummy persons and content IDs
+  time.ts        # KST day/week and season math
+  client.ts      # internal service client
+  secrets.ts     # file-mounted secrets and allowed guild
+  roles.ts       # safe 12-role palette validation
+tests/
+  game.test.ts   # economic invariants and behavior
+  api.test.ts    # local API authorization and request replay
+deploy/
+  init-secrets.sh
+  backup.sh
+compose.yaml
+Dockerfile
+.gitlab-ci.yml
+docs/
+  architecture.md
+  game-rules.md
+  operations.md
+~~~
+
+## Development and verification
+
+Run bun install then bun run check locally. The optional GitHub Actions workflow .github/workflows/mohae-ci.yml runs typecheck, Bun tests, four builds, Compose configuration and a Docker image build on configured GitHub mirror branches. A GitLab CI dispatch status is NOT proof these jobs ran; verify exact GitHub run + checkout SHA. The API test launches a real local game-api process with **fake credentials**.
+
+**Do not mistake a green CI pipeline for full operational readiness:** the Docker containers have not been booted in a live target host, the three Discord bot tokens have not been supplied and the Discord Gateway and live slash commands have not yet been tested. A backup restore rehearsal, security review and production privacy policy are necessary before real users.
+
+More detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
 
 
+## User-facing commands
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/blond11qq/mohae.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-* [Set up project integrations](https://gitlab.com/blond11qq/mohae/-/settings/integrations)
-
-## Collaborate with your team
-
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+MOHAE includes economy/collection, season pass, event/co-op, opt-in journal, JSON export, profile visibility, 1/2-star auto-dismantle and optional twelve-role color commands. Polly separately registers private /신고, /신고상태 and staff-only /신고목록 and /신고처리. All replies are private to the caller unless the explicitly enabled, private Polly staff receipt notification fires. See docs/operations.md for a command-by-command acceptance checklist.

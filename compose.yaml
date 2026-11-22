@@ -1,0 +1,67 @@
+name: mohae
+x-common-env: &common
+  ALLOWED_GUILD_IDS: ${ALLOWED_GUILD_IDS:?Set the guild ID}
+  GAME_API_URL: http://game-api:3000
+services:
+  game-api:
+    build: .
+    command: ["bun","apps/api.ts"]
+    restart: unless-stopped
+    environment:
+      ALLOWED_GUILD_IDS: ${ALLOWED_GUILD_IDS:?}
+      DATABASE_PATH: /data/mohae.sqlite
+    secrets: [mohae_api_key, collector_api_key, polly_api_key, journal_key]
+    volumes: [game-data:/data]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD","bun","-e","fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  mohae-bot:
+    build: .
+    command: ["bun","apps/mohae.ts"]
+    restart: unless-stopped
+    environment:
+      <<: *common
+      MOHAE_COLOR_ROLE_IDS: ${MOHAE_COLOR_ROLE_IDS:-}
+    secrets: [mohae_bot_token, mohae_api_key]
+    # Role colors are only enabled when all twelve pre-created role IDs are configured.
+
+    networks: [backend]
+    depends_on:
+      game-api: {condition: service_healthy}
+  collector-bot:
+    build: .
+    command: ["bun","apps/collector.ts"]
+    restart: unless-stopped
+    environment:
+      <<: *common
+      COLLECTOR_CHANNEL_IDS: ${COLLECTOR_CHANNEL_IDS:?Explicit channel IDs required}
+    secrets: [collector_bot_token, collector_api_key]
+    networks: [backend]
+    depends_on:
+      game-api: {condition: service_healthy}
+  polly-bot:
+    build: .
+    command: ["bun","apps/polly.ts"]
+    restart: unless-stopped
+    environment:
+      <<: *common
+      POLLY_REPORT_CHANNEL_ID: ${POLLY_REPORT_CHANNEL_ID:-}
+    secrets: [polly_bot_token, polly_api_key]
+    networks: [backend]
+    depends_on:
+      game-api: {condition: service_healthy}
+volumes:
+  game-data:
+networks:
+  backend:
+secrets:
+  mohae_bot_token: {file: ./secrets/mohae_bot_token}
+  collector_bot_token: {file: ./secrets/collector_bot_token}
+  polly_bot_token: {file: ./secrets/polly_bot_token}
+  mohae_api_key: {file: ./secrets/mohae_api_key}
+  collector_api_key: {file: ./secrets/collector_api_key}
+  polly_api_key: {file: ./secrets/polly_api_key}
+  journal_key: {file: ./secrets/journal_key}

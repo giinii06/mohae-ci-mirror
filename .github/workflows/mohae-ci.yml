@@ -1,0 +1,49 @@
+name: MOHAE Bun and Compose checks
+on:
+  push:
+    branches:
+      - main
+      - feat/mohae-v1-three-bots
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mohae-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Dependency installation
+        run: bun install
+      - name: TypeScript typecheck
+        run: bun run typecheck
+      - name: Bun unit and API regression tests
+        run: bun test
+      - name: Four entrypoint builds
+        run: bun run build
+      - name: Compose config and shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n deploy/init-secrets.sh deploy/backup.sh deploy/restore.sh
+          mkdir -p secrets
+          for name in mohae_bot_token collector_bot_token polly_bot_token mohae_api_key collector_api_key polly_api_key journal_key; do
+            printf placeholder > "secrets/$name"
+          done
+          export ALLOWED_GUILD_IDS=123456789012345678
+          export COLLECTOR_CHANNEL_IDS=123456789012345679
+          docker compose -f compose.yaml config --quiet
+      - name: Build production Docker image
+        run: docker compose -f compose.yaml build game-api
