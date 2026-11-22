@@ -1,30 +1,31 @@
-# User-facing README and merge readiness (Alchemy 2.2)
+# 일반 사용자 README 및 병합 준비 기록 (Alchemy 2.2)
 
-- gate_version: 2.2
-- project: blond11qq/mohae
-- existing MR: !1, source `feat/mohae-v1-three-bots`, target `main`
-- initial source SHA: d4093c82fd96fa4fa2f3e7b8ff9b31b96de0f3d9
-- user request: write a Korean, practical README for ordinary Discord users; merge existing MR into `main` if the actual merge gate can be satisfied.
-- resolved format: `README_USER.md` at repo root plus prominent navigation from existing developer-oriented `README.md`; preserve operator/developer documentation.
-- audience: non-admin members. No shell, tokens, self-hosting or CI instructions in user guide.
-- source of truth: command registration/dispatch in `apps/mohae.ts`, `apps/polly.ts`, `apps/collector.ts`; economy and privacy `src/game.ts`, `src/gacha.ts`, `src/catalog.ts`, `docs/game-rules.md`.
-- behavior acceptance: starting play, daily rewards, gacha, inventory, season, privacy and report flows; cover invalid inputs, permissions, rate limits and not-yet-deployed features honestly.
-- merge constraint: explicit user authorization to merge; NO authorization to change CI provider, runners, repo visibility, secrets or deploy. Previously recorded unresolved release gates must be re-evaluated from current evidence. Unverified tests must not be described as passing.
-- main SHA at discovery: 069c7ef18f77679dc50d148b3434a9c91fac66ad.
+- 검증 체계: `gate_version=2.2`
+- 프로젝트: `blond11qq/mohae`
+- 당시 병합 요청: MR !1, 원본 `feat/mohae-v1-three-bots`, 대상 `main`
+- 최초 작업 SHA: `d4093c82fd96fa4fa2f3e7b8ff9b31b96de0f3d9`
+- 당시 사용자 요청: 일반 디스코드 사용자를 위한 실용적인 한국어 README 작성, 실제 병합 검증 조건을 충족하면 기존 MR을 `main`으로 병합.
+- 확정한 문서 구성: 루트 `README_USER.md`를 추가하고 개발자용 `README.md` 상단에 눈에 띄는 링크 배치. 기존 운영자·개발자 문서는 보존.
+- 대상 독자: 관리자 권한이 없는 일반 사용자. 사용자 안내서에 셸·토큰·셀프 호스팅·CI 설정 설명은 포함하지 않음.
+- 사실 확인 기준: `apps/mohae.ts`, `apps/polly.ts`, `apps/collector.ts`의 명령어 등록과 처리 코드, `src/game.ts`, `src/gacha.ts`, `src/catalog.ts`, `docs/game-rules.md`의 경제·개인정보 규칙.
+- 사용 흐름 수용 조건: 게임 시작, 일일 보상, 뽑기, 보유 카드, 시즌, 개인정보, 신고를 설명하고 잘못된 입력·권한 부족·속도 제한·미배포 기능을 숨기지 않음.
+- 당시 병합 제한: 사용자가 병합을 명시적으로 요청했지만 CI 제공자, 러너, 저장소 공개 범위, 비밀키 또는 배포 설정 변경 권한은 없음. 이전 릴리스 검증 미완료 사항을 다시 확인하고, 실제 실행되지 않은 테스트를 통과했다고 표현하지 않음.
+- 조사 당시 `main` SHA: `069c7ef18f77679dc50d148b3434a9c91fac66ad`
 
-## Phases
+## 단계
 
-1. [Guide content](phase-01-user-guide.md) — document commands and economy from exact source; verify every registered user command is covered and examples are correct.
-2. [Integration and merge](phase-02-merge.md) — add root README link, inspect actual MR/head pipeline and CI jobs, two-lens review, merge only with an adequately established gate; otherwise preserve open MR and report blocker.
+1. [사용자 안내서 작성](phase-01-user-guide.md): 코드의 실제 명령어와 재화 규칙에 맞게 설명하고, 등록된 사용자 명령어가 모두 안내되는지 확인.
+2. [연결과 병합](phase-02-merge.md): 루트 README 링크 추가, MR/HEAD 및 CI 작업 확인, 요구사항·품질 검토 후 안전한 경우에만 병합. 그렇지 않으면 기존 MR을 보존하고 차단 사유 보고.
 
-## State
+## 당시 초기 상태
 
-- 2026-11-22: phase 01 not_started, phase 02 not_started. Prior v1 implementation gate is unverified; no retrospective status upgrade.
+- 2026-11-22: 1단계 `not_started`, 2단계 `not_started`. 이전 v1 구현의 검증 단계는 미완료였으며 과거 검증 결과를 소급하여 변경하지 않음.
 
+## 당시 추가 검증 기록 — 2026-11-22
 
-## Append-only verification checkpoint — 2026-11-22
+- 1단계: `not_started → in_progress → implemented`. 사용자 안내서 커밋 `bcde7063db07bf76f700b13e4e6e9028d880840b`. 정적 비교에서 MOHAE 명령어 **38/38**, Polly 명령어 **4/4**가 안내서에 포함되었으며, 게임 규칙은 구현 코드에 근거함. 루트 README 링크 및 내부 상대경로 확인.
+- 2단계: `not_started → in_progress → blocked`. 당시 MR에는 미검증 Bun/API 회귀 테스트와 실제 디스코드 통합 테스트 조건이 남아 있었음. 해당 시점 파이프라인 **#3098867015**는 외부 실행 요청만 성공하고 실제 Bun 테스트·빌드 작업 **0개**, 하위 파이프라인 **#3098867047**은 **건너뜀**. 당시 분류: `provider_result=unknown`, `jobs_verified=false`, `e2e_verified=false`. 그보다 앞선 MR 파이프라인 #3098849459는 실패 상태로 표시됨. 이것만으로는 병합 가능성을 증명할 수 없었음.
+- 사용자에게 병합 요청 권한은 있었으나 당시 미검증 항목에 대한 별도 예외 승인은 없었으므로, **이 체크포인트를 기록한 순간에는** Draft MR !1을 유지하고 `main`을 변경하지 않았음. CI 제공자·러너·미러·배포 설정은 변경하지 않음.
+- 검토 방식: `review.md`에 사용 흐름과 개인정보·보안 관점의 **순차 자체 검토**를 기록. 독립 검토자로 오인하지 않음.
 
-- Phase 01: not_started -> in_progress -> implemented. Guide commit `bcde7063db07bf76f700b13e4e6e9028d880840b`. Static source/guide review: 38 of 38 MOHAE commands present, 4 of 4 Polly commands present, Korean game mechanics sourced from real implementation, existing developer README links to `README_USER.md`, internal doc links point to existing files.
-- Phase 02: not_started -> in_progress -> blocked. The current MR code includes previously unverified Bun/API regression tests and a live Discord E2E gate. The current exact-SHA GitLab pipeline #3098867015 reports success for **dispatch only**, with **0 Bun test/build jobs**; downstream #3098867047 is **skipped**. `provider_result=unknown`, `jobs_verified=false`, `e2e_verified=false`. Another MR pipeline #3098849459 (older source SHA) reports failed. These are not acceptable test evidence for merging.
-- Merge authorization from the user is explicit, but an explicit waiver of essential failed/unknown verification was not supplied. Existing Draft MR !1 is preserved; `main` is unchanged. No change of CI provider, runner, mirror or deployment.
-- Reviews: documentation user-journey lens and privacy/security lens recorded in `review.md`. No independent review claimed.
+> **이 문서는 당시의 작업·검증 상태를 보존한 이력 문서입니다.** 이후 사용자의 별도 요청으로 MR !1이 병합되었으며, 위의 '병합 보류'는 현재 상태를 뜻하지 않습니다.
