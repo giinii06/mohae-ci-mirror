@@ -24,3 +24,14 @@
 ## Release gate
 
 Human-controlled Discord test-guild smoke test with three tokens, backup+restore rehearsal, offsite encrypted backup, privacy/permission review and stable schema migration plan are required before non-draft MR or deployment. Code/test completion does not replace these external E2E requirements.
+
+
+## 2026-11-22 continuation checkpoint (append-only)
+
+- Phase 01: not_started -> in_progress -> implemented. Four source files had localized text repaired; MOHAE slash-command/API parity expanded. Static inspection pinned to f88e22464c0ecedc91394ef0190c05bf5764dfb9 finds 38 declared MOHAE command names and 38 cases, all permitted MOHAE API actions routed, and no corrupted C1 codepoints in production source.
+- Phase 02: not_started -> in_progress -> implemented. All 4 Polly commands register and dispatch; member Manage Guild checks, ephemeral replies, report ownership enforced at API level, sensitive staff notice only includes receipt ID. Added negative and success API regression assertions.
+- Phase 03: not_started -> in_progress -> implemented. SQLite v1 schema guard, offline restore with rollback, private export with own reports, ignored backup files, operational runbook and GitHub Actions workflow.
+- Current **code** SHA: f88e22464c0ecedc91394ef0190c05bf5764dfb9. Its GitLab pipeline 3098849459 is SUCCESS for bridge dispatch only and has ZERO test/build jobs; downstream ci-hub-smoke pipeline 3098849510 was SKIPPED. Actual GitHub Bun jobs and checkout SHA are UNKNOWN. Categorization: dispatch=success; provider_result=unknown; jobs_verified=false; e2e_verified=false.
+- Pre-commit: no authenticated local checkout/executor for Bun; Bun test/typecheck/build on this code SHA NOT EXECUTED/VERIFIED. Historical 23/23 tests belonged to prior baseline ffa8b344, not the candidate.
+- Review: requirements and quality/security self-review recorded in review.md. No independent review or live Discord test.
+- Phase 01/02/03 remain implemented but NOT verified or completed; further advancement blocked by real CI job evidence and a live test-guild smoke/restore test. Keep existing MR Draft, do not merge or deploy.
