@@ -1,5 +1,8 @@
 import {describe,test,expect} from 'bun:test';
 import {Store} from '../src/store.ts';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {Game,GameError} from '../src/game.ts';
 import {gameDay,gameWeek,currentLevel,seasonTier,kstMondayFiveMs} from '../src/time.ts';
 import {drawOne,p3Percent,type Pity} from '../src/gacha.ts';
@@ -213,4 +216,21 @@ describe('Extended gameplay and privacy',()=>{
   expect(fresh).not.toBe(old);
   delete process.env.JOURNAL_KEY;store.close();
  });
+});
+
+
+test('SQLite schema version is durable, upgrades legacy v0 and rejects future versions',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'mohae-schema-'));
+ const file=join(dir,'game.sqlite');
+ try{
+  const first=new Store(file);
+  expect(first.db.query('PRAGMA user_version').get()).toEqual({user_version:1});
+  first.db.exec('PRAGMA user_version=0');
+  first.close();
+  const upgraded=new Store(file);
+  expect(upgraded.db.query('PRAGMA user_version').get()).toEqual({user_version:1});
+  upgraded.db.exec('PRAGMA user_version=2');
+  upgraded.close();
+  expect(()=>new Store(file)).toThrow('UNSUPPORTED_SCHEMA_VERSION');
+ }finally{rmSync(dir,{recursive:true,force:true});}
 });

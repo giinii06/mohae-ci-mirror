@@ -7,14 +7,18 @@ export class Store {
   if(file!==':memory:')mkdirSync(dirname(file),{recursive:true});
   this.db=new Database(file,{create:true,strict:true});
   this.db.exec('PRAGMA foreign_keys=ON;PRAGMA journal_mode=WAL;PRAGMA synchronous=FULL;PRAGMA busy_timeout=5000;');
-  this.migrate();
+  try{this.migrate();}catch(error){this.db.close();throw error;}
  }
  run(sql:string,...params:(string|number|null)[]):void{this.db.query(sql).run(...params);}
  get<T=any>(sql:string,...params:(string|number|null)[]):T|undefined{return this.db.query(sql).get(...params) as T|undefined;}
  all<T=any>(sql:string,...params:(string|number|null)[]):T[]{return this.db.query(sql).all(...params) as T[];}
  tx<T>(fn:()=>T):T{return this.db.transaction(fn).immediate();}
  close():void{this.db.close();}
- private migrate():void{this.db.exec([
+ private migrate():void{
+  const version=this.db.query('PRAGMA user_version').get() as {user_version:number}|null;
+  if(!version||!Number.isInteger(version.user_version)||version.user_version>1)
+   throw Error('UNSUPPORTED_SCHEMA_VERSION');
+  this.db.exec([
  "CREATE TABLE IF NOT EXISTS players(id TEXT PRIMARY KEY,guild_id TEXT NOT NULL,user_id TEXT NOT NULL,joined_at INTEGER NOT NULL,xp INTEGER NOT NULL DEFAULT 0 CHECK(xp>=0),representative TEXT,deleted INTEGER NOT NULL DEFAULT 0,UNIQUE(guild_id,user_id))",
  "CREATE TABLE IF NOT EXISTS wallets(player_id TEXT NOT NULL REFERENCES players(id),currency TEXT NOT NULL CHECK(currency IN('MOHAE','SHARD','TICKET')),balance INTEGER NOT NULL DEFAULT 0 CHECK(balance>=0),PRIMARY KEY(player_id,currency))",
  "CREATE TABLE IF NOT EXISTS ledger(id TEXT PRIMARY KEY,player_id TEXT NOT NULL REFERENCES players(id),currency TEXT NOT NULL,delta INTEGER NOT NULL,source TEXT NOT NULL,at INTEGER NOT NULL,UNIQUE(player_id,currency,source))",
@@ -50,5 +54,7 @@ export class Store {
  "CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,guild TEXT NOT NULL,reporter TEXT NOT NULL,target TEXT,reason TEXT NOT NULL,details TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'open',created INTEGER NOT NULL)",
  "CREATE TABLE IF NOT EXISTS guild_config(guild TEXT PRIMARY KEY,chat_channels TEXT NOT NULL DEFAULT '[]',voice_channels TEXT NOT NULL DEFAULT '[]',report_channel TEXT,enabled INTEGER NOT NULL DEFAULT 1)",
  "CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,actor TEXT NOT NULL,action TEXT NOT NULL,details TEXT NOT NULL,at INTEGER NOT NULL)"
- ].join(';')+';');}
+ ].join(';')+';');
+  if(version.user_version===0)this.db.exec('PRAGMA user_version=1');
+ }
 }
