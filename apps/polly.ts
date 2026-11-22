@@ -1,4 +1,4 @@
-import {Client,GatewayIntentBits,Events,SlashCommandBuilder,MessageFlags,ChannelType,PermissionFlagsBits} from 'discord.js';
+import {Client,GatewayIntentBits,Events,SlashCommandBuilder,MessageFlags,ChannelType,PermissionFlagsBits,type Guild} from 'discord.js';
 import {call} from '../src/client.ts';
 import {allowedGuild,secret} from '../src/secrets.ts';
 
@@ -27,7 +27,7 @@ function summaries(reports:Report[]):string{
   '['+r.status+'] #'+r.id+'\n신고자 '+r.reporter+' | 대상 '+(r.target??'-')+' | 사유 '+r.reason+'\n'+safe(r.details));
  return ('최근 신고 '+reports.length+'건 중 최대 10건\n\n'+rows.join('\n\n')).slice(0,1850);
 }
-async function register(g:{id:string;commands:{set:(commands:unknown[])=>Promise<unknown>}}){
+async function register(g:Guild){
  if(!allowedGuild(g.id))return;
  try{await g.commands.set(commands.map(c=>c.toJSON()));}
  catch(e){console.error('Polly command registration failed',e);}
