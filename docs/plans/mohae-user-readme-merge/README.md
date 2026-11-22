@@ -20,3 +20,11 @@
 ## State
 
 - 2026-11-22: phase 01 not_started, phase 02 not_started. Prior v1 implementation gate is unverified; no retrospective status upgrade.
+
+
+## Append-only verification checkpoint — 2026-11-22
+
+- Phase 01: not_started -> in_progress -> implemented. Guide commit `bcde7063db07bf76f700b13e4e6e9028d880840b`. Static source/guide review: 38 of 38 MOHAE commands present, 4 of 4 Polly commands present, Korean game mechanics sourced from real implementation, existing developer README links to `README_USER.md`, internal doc links point to existing files.
+- Phase 02: not_started -> in_progress -> blocked. The current MR code includes previously unverified Bun/API regression tests and a live Discord E2E gate. The current exact-SHA GitLab pipeline #3098867015 reports success for **dispatch only**, with **0 Bun test/build jobs**; downstream #3098867047 is **skipped**. `provider_result=unknown`, `jobs_verified=false`, `e2e_verified=false`. Another MR pipeline #3098849459 (older source SHA) reports failed. These are not acceptable test evidence for merging.
+- Merge authorization from the user is explicit, but an explicit waiver of essential failed/unknown verification was not supplied. Existing Draft MR !1 is preserved; `main` is unchanged. No change of CI provider, runner, mirror or deployment.
+- Reviews: documentation user-journey lens and privacy/security lens recorded in `review.md`. No independent review claimed.
