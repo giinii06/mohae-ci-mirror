@@ -29,3 +29,19 @@ test('Polly handles every declared moderation command',async()=>{
     expect(source).toContain("'"+action+"'");
   }
 });
+
+
+test('MOHAE exposes the approved player and manager actions',async()=>{
+  const source=await Bun.file(new URL('../apps/mohae.ts',import.meta.url)).text();
+  for(const command of ['천장','자동분해설정','자동분해','공개설정','다른프로필',
+    '일지','일지삭제','내보내기','이벤트','이벤트보상','이벤트시작',
+    '협동','협동참여','협동보상','협동시작','닉네임색']){
+    expect(source).toContain("case '"+command+"'");
+  }
+  for(const action of ['pity','auto-settings','auto-dismantle','visibility',
+    'public-profile','journal','journal-delete','export','event',
+    'event-claim','event-enable','coop','coop-contribute',
+    'coop-claim','coop-enable']){
+    expect(source).toContain("'"+action+"'");
+  }
+});
