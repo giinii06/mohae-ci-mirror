@@ -1,5 +1,9 @@
 # MOHAE | Three-Bot Discord Collection Game
 
+> **디스코드 일반 사용자라면:** **[MOHAE 한국어 사용 설명서 / README_USER.md](README_USER.md)**를 먼저 읽으세요. 출석·일퀘·뽑기·카드·시즌·Polly 신고를 처음부터 설명합니다.
+>
+> This README documents development and hosting. For an ordinary Discord player, see **[Korean end-user guide](README_USER.md)**.
+
 MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository is a working implementation branch of the original MOHAE game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
 
 **This release contains entirely dummy content** (person1 to person27, dummy minigames, cosmetics, quests and season events). **Stories, dialogue, story options and AI chat are excluded on purpose.** Card trading was explicitly deferred to a later release in the design document and is disabled.
