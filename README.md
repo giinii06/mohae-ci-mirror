@@ -1,10 +1,10 @@
 # MOHAE | Three-Bot Discord Collection Game
 
-> **디스코드 일반 사용자라면:** **[MOHAE 한국어 사용 설명서 / README_USER.md](README_USER.md)**를 먼저 읽으세요. 출석·일퀘·뽑기·카드·시즌·Polly 신고를 처음부터 설명합니다.
+> **Looking for instructions as a player?** Start with the **[English Discord Player Guide](README_USER.md)**. It covers daily rewards, character draws, cards, seasons, privacy, and Polly reports.
 >
-> This README documents development and hosting. For an ordinary Discord player, see **[Korean end-user guide](README_USER.md)**.
+> **Important:** The documentation is in English, but Discord commands retain their registered **Korean names**; the player guide shows their exact spelling.
 
-MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository is a working implementation branch of the original MOHAE game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
+MOHAE is an independently hosted Discord game built with **Bun + TypeScript + discord.js + SQLite**. This repository contains the MOHAE v1 implementation from the original game plan. It uses **three different, real Discord bots with three unique tokens** and a fourth internal game-api process.
 
 **This release contains entirely dummy content** (person1 to person27, dummy minigames, cosmetics, quests and season events). **Stories, dialogue, story options and AI chat are excluded on purpose.** Card trading was explicitly deferred to a later release in the design document and is disabled.
 
@@ -78,9 +78,12 @@ src/
 tests/
   game.test.ts   # economic invariants and behavior
   api.test.ts    # local API authorization and request replay
+  discord-contract.test.ts # slash-command contracts
 deploy/
   init-secrets.sh
   backup.sh
+  restore.sh
+README_USER.md
 compose.yaml
 Dockerfile
 .gitlab-ci.yml
@@ -96,9 +99,9 @@ Run bun install then bun run check locally. The optional GitHub Actions workflow
 
 **Do not mistake a green CI pipeline for full operational readiness:** the Docker containers have not been booted in a live target host, the three Discord bot tokens have not been supplied and the Discord Gateway and live slash commands have not yet been tested. A backup restore rehearsal, security review and production privacy policy are necessary before real users.
 
-More detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
+For players: [English Player Guide](README_USER.md). More technical detail: [Architecture](docs/architecture.md) · [Game rules](docs/game-rules.md) · [Operator runbook](docs/operations.md).
 
 
 ## User-facing commands
 
-MOHAE includes economy/collection, season pass, event/co-op, opt-in journal, JSON export, profile visibility, 1/2-star auto-dismantle and optional twelve-role color commands. Polly separately registers private /신고, /신고상태 and staff-only /신고목록 and /신고처리. All replies are private to the caller unless the explicitly enabled, private Polly staff receipt notification fires. See docs/operations.md for a command-by-command acceptance checklist.
+MOHAE offers economy and collection management, a season pass, events and cooperation, opt-in private journals, JSON data export, profile visibility, 1-star/2-star automatic duplicate dismantling, and optional color roles. Polly provides private reporting, receipt status, and restricted moderator workflows. **Command names remain Korean in Discord**. Consult the [English Player Guide](README_USER.md) for their exact spelling and usage. Replies are ephemeral except for an optional receipt-only notification in a protected moderator channel. See [Operations](docs/operations.md) for the verification checklist.
